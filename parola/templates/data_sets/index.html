@@ -1,0 +1,9 @@
+<div class="row">
+    <h3>Data Sets</h3>
+</div>
+
+{% for dataSetName in dataSetNames %}
+<div class="row">
+    <a href="/data_set/view/{{dataSetName}}"> {{dataSetName}} </a>
+</div>
+{% endfor %}

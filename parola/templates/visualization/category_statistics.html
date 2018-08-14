@@ -1,0 +1,444 @@
+{% load app_filters %}
+
+<div class="row">
+    <h3>Category Statistics</h3>
+</div>
+
+<div class="row">
+    <table class="form-text">
+        <tr>
+            <td class="label"><label class="control-label">Data set: </label></td>
+            <td>
+                <select class="form-control"onChange="window.location.href=this.value">
+                    {% for dataSet in dataSetNames %}
+                    {% if dataSet == 'index' %}
+                    <option selected="selected" disabled value="/visualization/category_statistics/index/{{classification}}/index">Choose one</option>
+                    {% elif data_set == dataSet %}
+                    <option selected="selected" value="/visualization/category_statistics/{{data_set}}/{{classification}}/index">{{data_set}}</option>
+                    {% else %}
+                    <option value="/visualization/category_statistics/{{dataSet}}/{{classification}}/index">{{dataSet}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="label"><label class="control-label">Classification: </label></td>
+            <td>
+                <select class="form-control"onChange="window.location.href=this.value">
+                    {% for classificationName in classificationNames %}
+                    {% if classificationName == 'index'%}
+                    <option selected="selected" disabled value="/">Choose one</option>
+                    {% elif classification == classificationName %}
+                    <option selected="selected" value="/visualization/category_statistics/{{data_set}}/{{classification}}/{{selectedCategory}}">{{classification}}</option>
+                    {% else %}
+                    <option value="/visualization/category_statistics/{{data_set}}/{{classificationName}}/{{selectedCategory}}">{{classificationName}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        {% if hasDataSet %}
+        <tr>
+            <td class="label"><label class="control-label">{{classification}}: </label></td>
+            <td>
+                <select class="form-control"onChange="window.location.href=this.value">
+                    {% for c in categoryList %}
+                    {% if c == 'index' %}
+                    <option selected="selected" disabled value="/visualization/category_statistics/index/index">Choose one</option>
+                    {% elif c == category %}
+                    <option selected="selected" value="/visualization/category_statistics/{{data_set}}/{{classification}}/{{category | slash_to_underscore}}">{{category | title | truncatechars:40 }}</option>
+                    {% else %}
+                    <option value="/visualization/category_statistics/{{data_set}}/{{classification}}/{{c | slash_to_underscore}}">{{c | title | truncatechars:40 }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        {% endif %}
+        {% if valid %}
+        <form action="" enctype="multipart/form-data" method="post">
+        <tr>
+            <td class="label"><label class="control-label">Limit Number of Years: </label></td>
+            <td>
+                <input class="form-control" type="number" value="{{previousNYears}}" name="target-n-years">
+            </td>
+        </tr>    
+        <tr>
+            <td class="label"><label class="control-label"></label></td>
+            <td>
+                <input class="btn btn-info" type="submit" value="Update" name="update">
+            </td>
+        </tr>
+        </form>
+        {% endif %}
+    </table>
+</div>
+
+{% if valid %}
+<div class="row">
+    <h4>Statistics for 
+        {% if classification == 'cpc' %}
+            {{ selectedCategory | upper | truncatechars:40}} - {{selectedCPCDescription}}
+        {% else %}
+            {{ selectedCategory | title | truncatechars:40}}
+        {% endif %}
+    </h4>
+</div>
+
+{% if nPPA %}
+<div class="row">
+    <h4>Number of P/PA</h4>
+</div>
+<div class="row">
+    <h1>{{nPPA}}</h1>
+</div>
+{% endif %}
+
+<!-- Bar Graph -->
+<div class="row">
+    <h4>Top Assignees</h4>
+</div>
+<div class="row">
+    <button id="download-bar-svg-1" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-bar-raw-1" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row">
+    <svg width="768" height="360" id="bar-svg-1"></svg>  
+    <script>
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ assigneeData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var assigneeData = JSON.parse(decodedString);
+        assigneeData = Object.values(assigneeData);
+        assigneeData["columns"] = Object.keys(assigneeData[0])
+        var columns = Object.keys(assigneeData[0])
+
+        for (var i = 0; i < assigneeData.length-1; i++) {
+            for (j = 1, t = 0; j < columns.length; ++j){
+                t = t + assigneeData[i][columns[j]];
+            }
+            assigneeData[i].total = t;
+        }
+        var svg1 = d3v4.select("#bar-svg-1"),
+            margin = {top: 20, right: 20, bottom: 30, left: 240},
+            width = +svg1.attr("width") - margin.left - margin.right,
+            height = +30 * assigneeData.length - margin.top - margin.bottom,
+            barG1 = svg1.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        svg1.attr("height", height+50);
+
+        var barY1 = d3v4.scaleBand()	
+            .rangeRound([0, height])
+            .paddingInner(0.05)
+            .align(0.1);
+
+        var barX1 = d3v4.scaleLinear()
+            .rangeRound([0, width]);
+            
+        var barZ1 = d3v4.scaleOrdinal()
+            .range(["#2D777F", "#173B40", "#2b9ca5", "#7cc9d2", "#5BEEFF", "#51D6E5", "#44B2BF", "#e5f2f9", "#E9EDDE", "#e2e2e2"]);
+            
+
+        console.log(assigneeData);
+        var keys1 = assigneeData.columns.slice(1);
+
+        assigneeData.sort(function(a, b) { return b.total - a.total; });
+        barY1.domain(assigneeData.map(function(d) { return d.Categories; }));
+        barX1.domain([0, d3v4.max(assigneeData, function(d) { return d.total; })]).nice();
+        barZ1.domain(keys1);
+
+        barG1.append("g")
+            .selectAll("g")
+            .data(d3v4.stack().keys(keys1)(assigneeData))
+            .enter().append("g")
+            .attr("fill", function(d) { return barZ1(d.key); })
+            .attr("transform", "translate(0,"+margin.top+")")
+            .selectAll("rect")
+            .data(function(d) { return d; })
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("y", function(d) { return barY1(d.data.Categories); })
+            .attr("x", function(d) { return barX1(d[0]); })
+            .attr("width", function(d) { return barX1(d[1]) - barX1(d[0]); })
+            .attr("height", barY1.bandwidth());
+
+        barG1.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0,"+margin.top+")")
+            .call(d3v4.axisLeft(barY1).tickSize(0));
+
+        barG1.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0,0)")
+            .call(d3v4.axisBottom(barX1).ticks(null).tickSize(0))
+            .append("text")
+            .attr("y", 0)
+            .attr("x", barX1(barX1.ticks().pop()) - 1)
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("text-anchor", "start")
+            .text("Number of P/PA")
+            .attr("transform", "translate("+ (-width) +",-10)");    
+
+        var barLegend1 = barG1.append("g")
+            .attr("transform", "translate(-100,-100)")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 10)
+            .attr("text-anchor", "end")
+            .selectAll("g")
+            .data(keys1.slice().reverse())
+            .enter().append("g")
+            //.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+            .attr("transform", function(d, i) { return "translate(-50," + (300 + i * 20) + ")"; });
+        
+        barLegend1.append("rect")
+            .attr("x", width - 19)
+            .attr("width", 19)
+            .attr("height", 19)
+            .attr("fill", barZ1);
+        
+        barLegend1.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9.5)
+            .attr("dy", "0.32em")
+            .text(function(d) { return d; });
+
+        d3v4.select("#download-bar-svg-1")
+        .on('click', function(){
+            saveSvgAsPng(document.getElementById("bar-svg-1"), "{{ selectedCategory | title | truncatechars:40}} Top Assignees", {scale: 3});
+        })
+        var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(assigneeData)));
+        var dlAnchorElem = document.getElementById('download-bar-raw-1');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Top {{classification}}.csv");
+    </script>
+</div>
+
+<!-- Number of P/PA per Year< -->
+<div class="row">
+    <h4>Number of P/PA per Year</h4>
+</div>
+<div class="row">
+    <button id="download-line-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-line-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row">
+    <svg width="768" height="640" id="line-svg" ></svg>
+    <script>
+    
+    var svg = d3v4.select("#line-svg"),
+        margin = {top: 70, right: 20, bottom: 40, left: 40},
+        width = +svg.attr("width") - margin.left - margin.right * 8,
+        height = +svg.attr("height") - margin.top - margin.bottom * 8,
+        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var x = d3v4.scaleBand()
+        .rangeRound([0, width])
+        .paddingInner(0.05)
+        .align(0.1);
+    
+    var y = d3v4.scaleLinear()
+        .rangeRound([height, 0]);
+    
+    var z = d3v4.scaleOrdinal()
+        // .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+        .range(["#2D777F", "#173B40", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+    var parser = new DOMParser;
+    var dom = parser.parseFromString("{{ yearData }}", 'text/html');
+    var decodedString = dom.body.textContent;
+    var yearData = JSON.parse(decodedString);
+    yearData = Object.values(yearData);
+    yearData["columns"] = Object.keys(yearData[0])
+    var columns = Object.keys(yearData[0])
+    var keys = yearData.columns.slice(1);
+    for (var i = 0; i < yearData.length-1; i++) {
+        for (j = 1, t = 0; j < columns.length; ++j){
+            t = t + yearData[i][columns[j]];
+        }
+        yearData[i].total = t;
+    }
+    
+    x.domain(yearData.map(function(d) { return d.Categories; }));
+    y.domain([0, d3v4.max(yearData, function(d) { return d.total; })]).nice();
+    z.domain(keys);
+
+    g.append("g")
+    .selectAll("g")
+    .data(d3v4.stack().keys(keys)(yearData))
+    .enter().append("g")
+        .attr("fill", function(d) { return z(d.key); })
+
+    .selectAll("rect")
+    .data(function(d) { return d; })
+    .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) { return x(d.data.Categories); })
+        .attr("y", function(d) { return y(d[1]); })
+        .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+        .attr("width", x.bandwidth());
+
+    g.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(0," + (height + 10) + ")")
+        .call(d3v4.axisBottom(x).tickSize(0))
+        .selectAll("text")
+        .attr("text-anchor", "start")
+        // .attr('transform', 'rotate(45 -10 10)');
+        // .attr("transform", "rotate(90)");
+
+    g.append("g")
+        .attr("class", "axis")
+        .call(d3v4.axisLeft(y).ticks(null).tickSize(0))
+    .append("text")
+        .attr("x", -35)
+        .attr("y", y(y.ticks().pop()) - 15)
+        .attr("dy", "0.32em")
+        .attr("fill", "#000")
+        .attr("text-anchor", "start")
+        .text("Number of P/PA");
+
+    var legend = g.append("g")
+        .attr("transform", "translate(0, -320)")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 10)
+        .attr("text-anchor", "end")
+    .selectAll("g")
+    .data(keys.slice().reverse())
+    .enter().append("g")
+        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+    legend.append("rect")
+        .attr("x", width - 19)
+        .attr("width", 19)
+        .attr("height", 19)
+        .attr("fill", z);
+
+    legend.append("text")
+        .attr("x", width - 24)
+        .attr("y", 9.5)
+        .attr("dy", "0.32em")
+        .text(function(d) { return d; });
+        
+    d3v4.select("#download-line-svg")
+    .on('click', function(){
+        saveSvgAsPng(document.getElementById("line-svg"), "{{selectedCategory}} Number of P/PA per Year", {scale: 7});
+    })
+    var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(yearData)));
+        var dlAnchorElem = document.getElementById('download-line-raw');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "{{selectedCategory}} Number of P/PA per Year.csv");
+    </script>
+</div>
+
+<!-- Top Assignees in Max< -->
+{% if false%}
+<div class="row">
+    <h4>Top Assignees in {{ maxYear }}</h4>
+</div>
+<div class="row">
+    <svg width="640" height="300" id="bar-svg"></svg>
+    
+    <script>
+        var svg = d3v4.select("#bar-svg"),
+            margin = {top: 20, right: 20, bottom: 30, left: 240},
+            width = +svg.attr("width") - margin.left - margin.right,
+            height = +svg.attr("height") - margin.top - margin.bottom,
+            barG = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var barY = d3v4.scaleBand()	
+            .rangeRound([0, height])
+            .paddingInner(0.05)
+            .align(0.1);
+
+        var barX = d3v4.scaleLinear()
+            .rangeRound([0, width]);
+            
+        var barZ = d3v4.scaleOrdinal()
+            .range(["#2D777F", "#173B40", "#2b9ca5", "#7cc9d2", "#5BEEFF", "#51D6E5", "#44B2BF", "#e5f2f9", "#E9EDDE", "#e2e2e2"]);
+            
+        var keys = data.columns.slice(1);
+
+        data.sort(function(a, b) { return b.total - a.total; });
+        barY.domain(data.map(function(d) { return d.CA; }));
+        barX.domain([0, d3v4.max(data, function(d) { return d.total; })]).nice();
+        barZ.domain(keys);
+
+        barG.append("g")
+            .selectAll("g")
+            .data(d3v4.stack().keys(keys)(data))
+            .enter().append("g")
+            .attr("fill", function(d) { return barZ(d.key); })
+            .attr("transform", "translate(0,"+margin.top+")")
+            .selectAll("rect")
+            .data(function(d) { return d; })
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("y", function(d) { return barY(d.data.CA); })
+            .attr("x", function(d) { return barX(d[0]); })
+            .attr("width", function(d) { return barX(d[1]) - barX(d[0]); })
+            .attr("height", barY.bandwidth());
+
+        barG.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0,"+margin.top+")")
+            .call(d3v4.axisLeft(barY).tickSize(0));
+
+        barG.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0,0)")
+            .call(d3v4.axisBottom(barX).ticks(null).tickSize(0))
+            .append("text")
+            .attr("y", 0)
+            .attr("x", barX(barX.ticks().pop()) - 1)
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("text-anchor", "start")
+            .text("Number of P/PA")
+            .attr("transform", "translate("+ (-width) +",-10)");    
+
+        var barLegend = barG.append("g")
+            .attr("transform", "translate(-100,-100)")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 10)
+            .attr("text-anchor", "end")
+            .selectAll("g")
+            .data(keys.slice().reverse())
+            .enter().append("g")
+            //.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+            .attr("transform", function(d, i) { return "translate(-50," + (300 + i * 20) + ")"; });
+        
+        barLegend.append("rect")
+            .attr("x", width - 19)
+            .attr("width", 19)
+            .attr("height", 19)
+            .attr("fill", barZ);
+        
+        barLegend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9.5)
+            .attr("dy", "0.32em")
+            .text(function(d) { return d; });
+
+        d3v4.select("#download-bar-svg")
+        .on('click', function(){
+            saveSvgAsPng(document.getElementById("bar-svg"), "Top Assignees in {{ maxYear }}", {scale: 3});
+        })
+    </script>
+</div>
+{% endif %}
+
+{% endif %}

@@ -1,0 +1,33 @@
+g {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+}
+
+.yaxis path {
+    display: none;
+}
+
+path.domain {
+    display: none;
+}
+
+.bar:hover {
+    fill: #5BEEFF ;
+}
+
+.cell:hover {
+    fill: #5BEEFF ;
+    }
+
+    
+td.legend{
+    font-size: 40;
+}
+
+.success{
+    color: green
+}
+
+.danger{
+    color: red
+}

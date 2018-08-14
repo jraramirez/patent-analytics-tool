@@ -1,0 +1,1367 @@
+{% load app_filters %}
+
+<div class="row">
+    <h3>Data Set Statistics</h3>
+</div>
+<div class="row">
+    {% if not hasDataSet %}
+    <table class="form-text">
+        <tr>
+            <td class="label"><label class="control-label">Data Set: </label></td>
+            <td>
+                <select class="form-control" onChange="window.location.href=this.value">
+                    {% for dataSet in dataSetNames %}
+                    {% if dataSet == 'index'%}
+                    <option selected="selected" disabled value="/visualization/dataset_statistics/index/index">Choose one</option>
+                    {% elif data_set == dataSet %}
+                    <option selected="selected" value="/visualization/dataset_statistics/{{data_set}}/{{classification}}">{{data_set}}</option>
+                    {% else %}
+                    <option value="/visualization/dataset_statistics/{{dataSet}}/{{classification}}">{{dataSet}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="label"><label class="control-label">Classification: </label></td>
+            <td>
+                <select class="form-control" onChange="window.location.href=this.value">
+                    {% for classificationName in classificationNames %}
+                    {% if classificationName == 'index'%}
+                    <option selected="selected" disabled value="/">Choose one</option>
+                    {% elif classification == classificationName %}
+                    <option selected="selected" value="/visualization/dataset_statistics/{{data_set}}/{{classification}}">{{classification}}</option>
+                    {% else %}
+                    <option value="/visualization/dataset_statistics/{{data_set}}/{{classificationName}}">{{classificationName}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+    {% endif %}
+
+    {% if nPPA %}
+        <form action="" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        <tr>
+            <td class="label"><label class="control-label">Limit Rankings to Top: </label></td>
+            <td>
+                <input class="form-control" type="number" value="{{targetN}}" name="target-n">
+            </td>
+        </tr>  
+        <tr>
+            <td class="label"><label class="control-label">Limit Number of Years: </label></td>
+            <td>
+                <input class="form-control" type="number" value="{{previousNYears}}" name="target-n-years">
+            </td>
+        </tr>  
+        <tr>
+            <td class="label"><label class="control-label"></label></td>
+            <td>
+                <input class="btn btn-info" type="submit" value="Update" name="update">
+            </td>
+        </tr>
+        </form>
+    </table>
+    {% endif %}
+</div>
+
+{% if nPPA %}
+<div class="row">
+    <h4>Number of P/PA</h4>
+</div>
+<div class="row">
+    <h1>{{nPPA}}</h1>
+</div>
+{% endif %}
+
+{% if nPPA %}
+<!-- View of P/PA Per Year -->
+<div class="row">
+    <h4>Number of P/PA per Year</h4>
+</div>
+<div class="row">
+    <button id="download-line-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-line-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row">
+    <svg width="768" height="360" id="line-svg"></svg>    
+    <script>
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ yearData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var lineData = JSON.parse(decodedString);
+        lineData = Object.values(lineData);
+        var svg = d3v4.select("#line-svg"),
+            margin = {top: 70, right: 30, bottom: 30, left: 60},
+            width = svg.attr("width") - margin.left - margin.right,
+            height = svg.attr("height") - margin.top - margin.bottom,
+            lineG = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
+        var lineX = d3v4.scaleLinear().range([0, width]),
+            lineY = d3v4.scaleLinear().range([height, 0]);
+
+        var line = d3v4.line()
+            // .curve(d3v4.curveBasis)
+            .x(function(d) { return lineX(d.Years); })
+            .y(function(d) { return lineY(d.nPPA); });
+        
+        lineX.domain(d3v4.extent(lineData, function(d) { return d.Years; }));
+        lineY.domain(d3v4.extent(lineData, function(d) { return d.nPPA; }));
+
+        lineG.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3v4.axisBottom(lineX).tickSize(0).tickFormat(d3v4.format("d")))
+            .select(".domain")
+            .remove();
+
+        lineG.append("g")
+            .attr("class", "yaxis")
+            .call(d3v4.axisLeft(lineY).tickSize(0).tickFormat(d3v4.format("d")))
+            .append("text")
+
+        lineG.append("path")
+            .datum(lineData)
+            .attr("fill", "none")
+            .attr("stroke", "#2D777F")
+            .attr("stroke-linejoin", "round")
+            .attr("stroke-linecap", "round")
+            .attr("stroke-width", 3)
+            .attr("d", line);
+
+        d3v4.select("#download-line-svg")
+        .on('click', function(){
+            saveSvgAsPng(document.getElementById("line-svg"), "Number of P/PA per Year.png", {scale: 10});
+        })
+        // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lineData));
+        // var dlAnchorElem = document.getElementById('download-line-raw');
+        // dlAnchorElem.setAttribute("href", dataStr);
+        // dlAnchorElem.setAttribute("download", "Number of P/PA per Year.json");
+        var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(lineData)));
+        var dlAnchorElem = document.getElementById('download-line-raw');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Number of P/PA per Year.csv");        
+    </script>
+</div>
+<!-- View of P/PA Per Year -->
+<div class="row">
+    <h4>Number of P/PA per Year</h4>
+</div>
+<div class="row">
+    <button id="download-area-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-area-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row" id="areaDiv">
+    <script>
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ areaData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var areaData = JSON.parse(decodedString);
+            areaData = Object.values(areaData);
+            console.log(areaData);
+        var areaMargin = {top: 70, right: 30, bottom: 30, left: 60},
+            areaWidth = 800 - areaMargin.left - areaMargin.right,
+            areaHeight = 360 - areaMargin.top - areaMargin.bottom
+        
+        var areaX = d3.scale.linear()
+            .range([0, areaWidth]);
+        
+        var areaY = d3.scale.linear()
+            .range([areaHeight, 0]);
+        
+        var areaColors = ["#2D777F", "#173B40"]
+        
+        var areaXAxis = d3.svg.axis()
+            .scale(areaX)
+            .orient("bottom")
+            .tickFormat(d3.format("d"));
+        
+        var areaYAxis = d3.svg.axis()
+            .scale(areaY)
+            .orient("left")
+            .tickFormat(d3.format("d"));
+        
+        var stack = d3.layout.stack()
+            .offset("zero")
+            .values(function(d) { return d.values; })
+            .x(function(d) { return d.Years; })
+            .y(function(d) { return d.nPPA; });
+        
+        var nest = d3.nest()
+            .key(function(d) { return d.Types; });
+        
+        var area = d3.svg.area()
+            .interpolate("linear")
+            .x(function(d) { return areaX(d.Years); })
+            .y0(function(d) { return areaY(d.y0); })
+            .y1(function(d) { return areaY(d.y0 + d.y); });
+        
+        var areaSVG = d3.select("#areaDiv").append("svg")
+            .attr("id", "area-svg")
+            .attr("width", areaWidth + areaMargin.left + areaMargin.right)
+            .attr("height", areaHeight + areaMargin.top + areaMargin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + areaMargin.left + "," + areaMargin.top + ")");
+
+        areaData.forEach(function(d) {
+        d.Years = +d.Years;
+        d.nPPA = +d.nPPA;
+        });
+        var layers = stack(nest.entries(areaData));
+        areaX.domain(d3.extent(areaData, function(d) { return d.Years; }));
+        areaY.domain([0, d3.max(areaData, function(d) { return d.y0 + d.y; })]);
+    
+        areaSVG.selectAll(".layer")
+            .data(nest.entries(areaData))
+        .enter().append("path")
+            .attr("class", "layer")
+            .attr("d", function(d) { return area(d.values); })
+            .style("fill", function(d, i) { return areaColors[i]; });
+    
+        areaSVG.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + (areaHeight+10) + ")")
+            .call(areaXAxis.tickSize(0));
+    
+        areaSVG.append("g")
+            .attr("class", "y axis")
+            .call(areaYAxis.tickSize(0));
+        
+        var areaLegend = areaSVG.append("g")
+            .attr("transform", "translate(600,-320)")
+            .attr("text-anchor", "end")
+            .selectAll("g")
+            .data(layers.slice())
+            .enter().append("g")
+            .attr("transform", function(d, i) { return "translate(-50," + (250 + i * 30) + ")"; });
+        
+        areaLegend.append("rect")
+            .attr("x", 120)
+            .attr("width", 25)
+            .attr("height", 25)
+            .attr("fill", function(d, i) { return areaColors[i]; });
+        
+        areaLegend.append("text")
+            .attr("x", 105)
+            .attr("y", 9.5)
+            .attr("dy", "0.32em")
+            .text(function(d) { return d.key; });
+
+        d3v4.select("#download-area-svg")
+        .on('click', function(){
+            saveSvgAsPng(document.getElementById("area-svg"), "Number of P/PA per Year (Area).png", {scale: 10});
+        })
+        var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(areaData)));
+        var dlAnchorElem = document.getElementById('download-area-raw');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Number of P/PA per Year (Area).csv");
+    </script>
+</div>
+
+<!-- View of Top Categories -->
+<div class="row">    
+    <h4>Top {{classification}}</h4>
+</div>
+<div class="row">
+    <button id="download-category-bar-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-category-bar-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row">
+    <svg width="768" id="category-bar-svg"></svg>
+    <script>
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ categoryData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var categoryData = JSON.parse(decodedString);
+        categoryData = Object.values(categoryData);
+        categoryData["columns"] = Object.keys(categoryData[0])
+        var columns = Object.keys(categoryData[0])
+        
+        var categoryBarSVG = d3v4.select("#category-bar-svg"),
+            margin = {top: 20, right: 20, bottom: 30, left: 240},
+            categoryBarWidth = +categoryBarSVG.attr("width") - margin.left - margin.right,
+            categoryBarHeight = +30 * categoryData.length - margin.top - margin.bottom,
+            categoryBarG = categoryBarSVG.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        categoryBarSVG.attr("height", categoryBarHeight+50);
+
+        var categoryBarY = d3v4.scaleBand()	
+            .rangeRound([0, categoryBarHeight])
+            .paddingInner(0.05)
+            .align(0.1);
+
+        var categoryBarX = d3v4.scaleLinear()
+            .rangeRound([0, categoryBarWidth]);
+            
+        var categoryBarZ = d3v4.scaleOrdinal()
+        .range(["#2D777F", "#173B40", "#2b9ca5", "#7cc9d2", "#5BEEFF", "#51D6E5", "#44B2BF", "#e5f2f9", "#E9EDDE", "#e2e2e2"]);
+        
+        var colors = ["#5BEEFF", "#173B40", "#51D6E5", "#44B2BF", "#2D777F", "#e5f2f9", "#E9EDDE", "#e2e2e2"]
+
+        for (var i = 0; i < categoryData.length-1; i++) {
+            for (j = 1, t = 0; j < columns.length; ++j){
+                t = t + categoryData[i][columns[j]];
+            }
+            categoryData[i].total = t;
+        }
+
+        var keys = categoryData.columns.slice(1);
+
+        // categoryData.sort(function(a, b) { return b.total - a.total; });
+        categoryBarY.domain(categoryData.map(function(d) { return d.Categories; }));
+        categoryBarX.domain([0, d3v4.max(categoryData, function(d) { return d.total; })]).nice();
+        categoryBarZ.domain(keys);
+
+        categoryBarG.append("g")
+            .selectAll("g")
+            .data(d3v4.stack().keys(keys)(categoryData))
+            .enter().append("g")
+            .attr("fill", function(d) { return categoryBarZ(d.key); })
+            .attr("transform", "translate(0,18)")
+            .selectAll("rect")
+            .data(function(d) { return d; })
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("y", function(d) { return categoryBarY(d.data.Categories); })
+            .attr("x", function(d) { return categoryBarX(d[0]); })
+            .attr("width", function(d) { return categoryBarX(d[1]) - categoryBarX(d[0]); })
+            .attr("height", categoryBarY.bandwidth());
+
+        categoryBarG.append("g")
+            .attr("class", "yaxis")
+            .attr("transform", "translate(0,18)")
+            .call(d3v4.axisLeft(categoryBarY).tickSize(0));
+
+        categoryBarG.append("g")
+            .attr("class", "xaxis")
+            .attr("transform", "translate(0,0)")
+            .call(d3v4.axisBottom(categoryBarX).ticks(null).tickSize(0).tickFormat(d3v4.format("d")))
+            .append("text")
+            .attr("y", 0)
+            .attr("x", categoryBarX(categoryBarX.ticks().pop()) - 1)
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("text-anchor", "start")
+            .text("Number of P/PA")
+            .attr("transform", "translate("+ (-categoryBarWidth) +",-10)");
+            
+        var categoryLegend = categoryBarG.append("g")
+            .attr("transform", "translate(0,-100)")
+            .attr("font-size", 16)
+            .attr("text-anchor", "end")
+            .selectAll("g")
+            .data(keys.slice().reverse())
+            .enter().append("g")
+            //.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+            .attr("transform", function(d, i) { return "translate(-50," + (300 + i * 20) + ")"; });
+        
+            categoryLegend.append("rect")
+            .attr("x", categoryBarWidth - 19)
+            .attr("width", 19)
+            .attr("height", 19)
+            .attr("fill", categoryBarZ);
+        
+            categoryLegend.append("text")
+            .attr("x", categoryBarWidth - 24)
+            .attr("y", 9.5)
+            .attr("dy", "0.32em")
+            .text(function(d) { return d; });
+
+            d3v4.select("#download-category-bar-svg")
+            .on('click', function(){
+                saveSvgAsPng(document.getElementById("category-bar-svg"), "Top {{classification}}", {scale: 7});
+            })
+            var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(categoryData)));
+            var dlAnchorElem = document.getElementById('download-category-bar-raw');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "Top {{classification}}.csv");
+    </script>
+</div>
+
+{% if False%}
+<!-- View of Top Categories -->
+<div class="row">    
+    <h4>Top {{classification}}</h4>
+</div>
+<div class="row">
+    <button id="download-category-percent-bar-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-category-percent-bar-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row">
+    <svg class="chart" id="category-percent-bar-svg"></svg>
+    <script>
+    var categoryPercentWidth = 800,
+        categoryPercentBarHeight = 30,
+        categoryPercentMargin = 330;
+    
+    colors = ["#2D777F", "#ed7d2e", "#5BEEFF", "#258296", "#6cc8db", "#194660", "#316e8c", "#44B2BF", "#a6c8cf", "#e2e2e2", "#c1dae1", "#999", "#90b9c0"]
+    
+    var categoryPercentX = d3.scale.linear()
+        .range([0, categoryPercentWidth - categoryPercentMargin]);
+    
+    
+    var chart = d3.select(".chart")
+        .attr("width", categoryPercentWidth);
+    
+    var parser = new DOMParser;
+    var dom = parser.parseFromString("{{ categoryPercentData }}", 'text/html');
+    var decodedString = dom.body.textContent;
+    var categoryPercentData = JSON.parse(decodedString);
+    categoryPercentData = Object.values(categoryPercentData);
+    // categoryPercentData.sort(function(a, b) { return b.percent - a.percent; });
+    categoryPercentX.domain([0, d3.max(categoryPercentData, function(d) { return d.percent; })]);
+
+    chart.attr("height", categoryPercentBarHeight * categoryPercentData.length);
+
+    var categoryPercentBar = chart.selectAll("g")
+        .data(categoryPercentData)
+    .enter().append("g")
+        .attr("transform", function(d, i) { return "translate(300," + i * categoryPercentBarHeight + ")"; });
+
+    categoryPercentBar.append("rect")
+        .attr("width", function(d) { return categoryPercentX(d.percent); })
+        .attr("fill", function(d) { return colors[0]; })
+        .attr("height", categoryPercentBarHeight - 1);
+
+    categoryPercentBar.append("text")
+        .attr("x", function(d) { return categoryPercentX(d.percent) - 45; })
+        .attr("fill", "white")
+        .attr("y", categoryPercentBarHeight / 2)
+        .attr("dy", ".35em")
+        .text(function(d) { return d.percent + "%"; });
+        
+    categoryPercentBar.append("text")
+        .attr("x", -55)
+        .attr("y", categoryPercentBarHeight / 2)
+        .attr("dy", ".35em")
+        .style("text-anchor", "end")
+        .text(function(d) { return d.Categories; });
+                
+    // categoryPercentBar.append("svg:image")
+    //     .attr("xlink:href", function(d) { return "images/" + d.Categories.replace("/", " ") + ".png"; } )
+    //     .attr("x", -40)
+    //     .attr("y", 2)
+    //     .attr("width", categoryPercentBarHeight-5)
+    //     .attr("height", categoryPercentBarHeight-5);
+    
+    function type(d) {
+        d.percent = +d.percent;
+        return d;
+    }
+    
+    d3v4.select("#download-category-percent-bar-svg")
+    .on('click', function(){
+        saveSvgAsPng(document.getElementById("category-percent-bar-svg"), "Top 10 {{classification}}", {scale: 7});
+    })
+    var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(categoryPercentData)));
+        var dlAnchorElem = document.getElementById('download-category-percent-bar-raw');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Top 10 {{classification}} Number of P/PA per Year.csv");
+    </script>
+</div>
+{% endif %}
+
+{% if CPCLegend %}
+<!-- View of CPC Legend -->
+<div class="row">
+    <h4>CPC Descriptions</h4>
+</div>
+<div class="row">
+    <table>
+        <tr>
+            <th>CPC</th>
+            <th>Descriptions</th>
+        </tr>
+        {% for CPC, CPCDescription in CPCLegend %}
+        <tr>
+            <td>{{CPC | upper}}</td>
+            <td>{{CPCDescription}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+<!-- View of Number of P/PA Per Category Per Year -->    
+<div class="row">
+    <h4>Top {{classification}} and their P/PA Counts per Year</h4>
+</div>
+<div class="row">
+    <button id="download-heatmap-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-heatmap-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row">
+    <div class="heatmap"></div>
+    <script>
+        var itemSize = 30,
+            cellSize = itemSize - 1,
+            margin = {top: 40, right: 20, bottom: 20, left: 230};
+
+        var heatMapWidth = 1200 - margin.right - margin.left,
+            heatMapHeight = 500 - margin.top - margin.bottom;
+        
+        var minCount = "{{minCount}}";
+        var maxCount = "{{maxCount}}";
+        var heatMapColors = ["#e5f2f9", "#2D777F"]
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ categoryYearData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var categoryYearData = JSON.parse(decodedString);
+        categoryYearData = Object.values(categoryYearData);
+        categoryYearData = categoryYearData.map(function( item ) {
+            var newItem = {};
+            newItem.years = item.Years;
+            newItem.categories = item.Categories;
+            newItem.nppa = item.nPPA;
+            return newItem;
+        })
+    
+        var x_elements = d3.set(categoryYearData.map(function( item ) { return item.years; } )).values(),
+            y_elements = d3.set(categoryYearData.map(function( item ) { return item.categories; } )).values();
+    
+        var xScale = d3.scale.ordinal()
+            .domain(x_elements)
+            .rangeBands([0, x_elements.length * itemSize]);
+    
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .tickFormat(function (d) {
+                return d;
+            })
+            .orient("top")
+            .tickSize(0);
+    
+        var yScale = d3.scale.ordinal()
+            .domain(y_elements)
+            .rangeBands([0, y_elements.length * itemSize]);
+    
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .tickFormat(function (d) {
+                return d;
+            })
+            .orient("left")
+            .tickSize(0);
+    
+        var colorScale = d3.scale.linear()
+            .domain([minCount, maxCount])
+            .range(heatMapColors);
+    
+        var heatMapSVG = d3.select('.heatmap')
+            .append("svg")
+            .attr("id", "heatmap-svg")  
+            .attr("width", heatMapWidth + margin.left + margin.right)
+            .attr("height", heatMapHeight + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + ", 50)");
+    
+        var cells = heatMapSVG.selectAll('rect')
+            .data(categoryYearData)
+            .enter().append('g').append('rect')
+            .attr('class', 'cell')
+            .attr('width', cellSize)
+            .attr('height', cellSize)
+            .attr('y', function(d) { return yScale(d.categories); })
+            .attr('x', function(d) { return xScale(d.years); })
+            .attr('fill', function(d) { return colorScale(d.nppa); });
+    
+        heatMapSVG.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+            .selectAll('text')
+            // .attr('font-weight', 'normal');
+    
+        heatMapSVG.append("g")
+            .attr("class", "x axis")
+            .call(xAxis)
+            .selectAll('text')
+            // .attr('font-weight', 'normal')
+            .style("text-anchor", "start")
+            .attr("dx", ".8em")
+            .attr("dy", ".5em")
+            .attr("transform", function (d) {
+                return "rotate(-90)";
+        });
+
+        d3v4.select("#download-heatmap-svg")
+        .on('click', function(){
+            saveSvgAsPng(document.getElementById("heatmap-svg"), "Top {{classification}} vs Years", {scale: 7});
+        })
+        var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(categoryYearData)));
+        var dlAnchorElem = document.getElementById('download-heatmap-raw');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Top {{classification}} vs Years.csv");
+    </script>
+</div>
+
+<!-- View of Top Sectors and Industries -->
+<div class="row">
+    <h4>Top Sectors and Industries</h4>
+</div>
+<div class="row">
+    <button id="download-sunburst-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-sunburst-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row">
+    <div id="sunburst"></div>
+    <style>    
+        circle,
+        path {
+            cursor: pointer;
+        }
+        
+        circle {
+            fill: none;
+            pointer-events: all;
+        }
+        
+        #tooltip { background-color: white;
+                        padding: 3px 5px;
+                        border: 1px solid black;
+                        text-align: center;}
+    </style>
+    <script>    
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ sunBurstData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var decodedString = decodedString.replace(/'/g, '"');
+        var sunBurstData = JSON.parse(decodedString);
+        var margin = {top: 600, right: 600, bottom: 600, left: 600},
+            radius = Math.min(margin.top, margin.right, margin.bottom, margin.left) - 250;
+        
+        function filter_min_arc_size_text(d, i) {return (d.dx*d.depth*radius/3)>14}; 
+        
+        var colors = ["#2b9ca5", "#E9EDDE", "#7cc9d2", "#e5f2f9", "#51D6E5", "#5BEEFF", "#44B2BF", "#2D777F", "#a6c8cf", "#e2e2e2", "#c1dae1", "#999", "#90b9c0", "#173B40"];
+        var colorFunction = d3.scale.linear().domain([1, colors.length])
+                .range(colors);     
+        
+        var hue = d3.scale.category10();
+        var luminance = d3.scale.sqrt()
+            .domain([0, 1e6])
+            .clamp(true)
+            .range([90, 20]);
+        
+        var sunburstSVG = d3.select("#sunburst").append("svg")
+            .attr("id", "sunburst-svg")
+            .attr("width", margin.left + margin.right)
+            .attr("height", margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
+        var partition = d3.layout.partition()
+            .sort(function(a, b) { return d3.ascending(a.name, b.name); })
+            .size([2 * Math.PI, radius]);
+        
+        var arc = d3.svg.arc()
+            .startAngle(function(d) { return d.x; })
+            .endAngle(function(d) { return d.x + d.dx - .01 / (d.depth + .5); })
+            .innerRadius(function(d) { return radius / 3 * d.depth; })
+            .outerRadius(function(d) { return radius / 3 * (d.depth + 1) - 1; });
+        
+        //Tooltip description
+        var tooltip = d3.select("body")
+            .append("div")
+            .attr("id", "tooltip")
+            .style("position", "absolute")
+            .style("z-index", "10")
+            .style("opacity", 0);
+        
+        function format_number(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+                
+        function format_description(d) {
+                return  '<b>' + d.name + '</b><br> (' + format_number(d.value) + ')';
+        }
+        
+        function computeTextRotation(d) {
+            var angle=(d.x +d.dx/2)*180/Math.PI - 90	
+            
+            return angle;
+        }
+        
+        function mouseOverArc(d) {
+                        d3.select(this).attr("stroke","black")
+                        
+                    tooltip.html(format_description(d));
+                    return tooltip.transition()
+                    .duration(50)
+                    .style("opacity", 0.9);
+                }
+        
+        function mouseOutArc(){
+            d3.select(this).attr("stroke","")
+            return tooltip.style("opacity", 0);
+        }
+        
+        function mouseMoveArc (d) {
+                    return tooltip
+                    .style("top", (d3.event.pageY-10)+"px")
+                    .style("left", (d3.event.pageX+10)+"px");
+        }
+        
+        var root_ = null;
+        root = sunBurstData;            
+        partition
+            .value(function(d) { return d.size; })
+            .nodes(sunBurstData)
+            .forEach(function(d) {
+            d._children = d.children;
+            d.sum = d.value;
+            d.key = key(d);
+            d.fill = fill(d);
+            });
+    
+    
+        // Now redefine the value function to use the previously-computed sum.
+        partition
+            .children(function(d, depth) { return depth < 2 ? d._children : null; })
+            .value(function(d) { return d.sum; });
+    
+        var center = sunburstSVG.append("circle")
+            .attr("r", radius / 3)
+            .on("click", zoomOut);
+    
+        center.append("title")
+            .text("zoom out");
+            
+        var partitioned_data=partition.nodes(root).slice(1)
+    
+        var path = sunburstSVG.selectAll("path")
+            .data(partitioned_data)
+        .enter().append("path")
+            .attr("d", arc)
+            .style("fill", function(d) { return d.fill; })
+            .each(function(d) { this._current = updateArc(d); })
+            .on("click", zoomIn)
+            .on("mouseover", mouseOverArc)
+            .on("mousemove", mouseMoveArc)
+            .on("mouseout", mouseOutArc);
+        
+            
+        var texts = sunburstSVG.selectAll("text")
+            .data(partitioned_data)
+        .enter().append("text")
+            .filter(filter_min_arc_size_text)    	
+            .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
+            .attr("x", function(d) { return radius / 3 * d.depth; })	
+            .attr("dx", "6") // margin
+            .attr("dy", ".35em") // vertical-align	
+            .text(function(d,i) {return d.name})
+    
+        function zoomIn(p) {
+        if (p.depth > 1) p = p.parent;
+        if (!p.children) return;
+        zoom(p, p);
+        }
+    
+        function zoomOut(p) {
+        if (!p.parent) return;
+        zoom(p.parent, p);
+        }
+    
+        // Zoom to the specified new root.
+        function zoom(root, p) {
+        if (document.documentElement.__transition__) return;
+    
+        // Rescale outside angles to match the new layout.
+        var enterArc,
+            exitArc,
+            outsideAngle = d3.scale.linear().domain([0, 2 * Math.PI]);
+    
+        function insideArc(d) {
+            return p.key > d.key
+                ? {depth: d.depth - 1, x: 0, dx: 0} : p.key < d.key
+                ? {depth: d.depth - 1, x: 2 * Math.PI, dx: 0}
+                : {depth: 0, x: 0, dx: 2 * Math.PI};
+        }
+    
+        function outsideArc(d) {
+            return {depth: d.depth + 1, x: outsideAngle(d.x), dx: outsideAngle(d.x + d.dx) - outsideAngle(d.x)};
+        }
+    
+        center.datum(root);
+    
+        if (root === p) enterArc = outsideArc, exitArc = insideArc, outsideAngle.range([p.x, p.x + p.dx]);
+        
+            var new_data=partition.nodes(root).slice(1)
+    
+        path = path.data(new_data, function(d) { return d.key; });
+                
+        if (root !== p) enterArc = insideArc, exitArc = outsideArc, outsideAngle.range([p.x, p.x + p.dx]);
+    
+        d3.transition().duration(d3.event.altKey ? 7500 : 750).each(function() {
+            path.exit().transition()
+                .style("fill-opacity", function(d) { return d.depth === 1 + (root === p) ? 1 : 0; })
+                .attrTween("d", function(d) { return arcTween.call(this, exitArc(d)); })
+                .remove();
+                
+            path.enter().append("path")
+                .style("fill-opacity", function(d) { return d.depth === 2 - (root === p) ? 1 : 0; })
+                .style("fill", function(d) { return d.fill; })
+                .on("click", zoomIn)
+                    .on("mouseover", mouseOverArc)
+                .on("mousemove", mouseMoveArc)
+                .on("mouseout", mouseOutArc)
+                .each(function(d) { this._current = enterArc(d); });
+    
+            
+            path.transition()
+                .style("fill-opacity", 1)
+                .attrTween("d", function(d) { return arcTween.call(this, updateArc(d)); });
+        });
+
+        texts = texts.data(new_data, function(d) { return d.key; })
+        texts.exit()
+            .remove()    
+        texts.enter()
+            .append("text")
+                
+        texts.style("opacity", 0)
+            .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
+            .attr("x", function(d) { return radius / 3 * d.depth; })	
+            .attr("dx", "6") // margin
+            .attr("dy", ".35em") // vertical-align
+            .filter(filter_min_arc_size_text)    	
+            .text(function(d,i) {return d.name})
+            .transition().delay(750).style("opacity", 1)
+                
+                
+        }
+        function key(d) {
+            var k = [], p = d;
+            while (p.depth) k.push(p.name), p = p.parent;
+            return k.reverse().join(".");
+        }
+        
+        function fill(d) {
+            var p = d;
+            while (p.depth > 1) p = p.parent;
+            var c = d3.lab(hue(p.name));
+            c.l = luminance(d.sum);
+            c.b = c.b - 20;
+            c.a = c.a - 70;
+            c.l = c.l - 20;
+            return c;
+        }
+        
+        function arcTween(b) {
+            var i = d3.interpolate(this._current, b);
+            this._current = i(0);
+            return function(t) {
+            return arc(i(t));
+            };
+        }
+        
+        function updateArc(d) {
+            return {depth: d.depth, x: d.x, dx: d.dx};
+        }
+        d3.select(self.frameElement).style("height", margin.top + margin.bottom + "px");
+
+        d3v4.select("#download-sunburst-svg")
+        .on('click', function(){
+            saveSvgAsPng(document.getElementById("sunburst-svg"), "Top Assignee Sectors and Industries", {scale: 7});
+        })
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(decodedString));
+        var dlAnchorElem = document.getElementById('download-sunburst-raw');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Top Assignee Sectors and Industries.json");
+    </script> 
+</div>
+
+<!-- View of Top Assignees -->
+<div class="row">
+    <h4>Top Assignees</h4>
+</div>
+<div class="row">
+    <button id="download-ca-bar-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-ca-bar-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row">
+    <svg width="768" id="ca-bar-svg"></svg>
+    <script>
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ assigneeData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var assigneeData = JSON.parse(decodedString);
+        assigneeData = Object.values(assigneeData);
+        assigneeData["columns"] = Object.keys(assigneeData[0])
+        var columns = Object.keys(assigneeData[0])
+
+        var CABarSVG = d3v4.select("#ca-bar-svg"),
+            margin = {top: 20, right: 20, bottom: 30, left: 240},
+            CABarWidth = + CABarSVG.attr("width") - margin.left - margin.right,  
+            CABarHeight = + 30*assigneeData.length - margin.top - margin.bottom,
+            CABarG = CABarSVG.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            CABarSVG.attr("height", CABarHeight+50);
+
+        var CABarY = d3v4.scaleBand()	
+            .rangeRound([0, CABarHeight])
+            .paddingInner(0.05)
+            .align(0.1);
+
+        var CABarX = d3v4.scaleLinear()
+            .rangeRound([0, CABarWidth]);
+            
+        var CABarZ = d3v4.scaleOrdinal()
+        .range(["#2D777F", "#173B40", "#2b9ca5", "#7cc9d2", "#5BEEFF", "#51D6E5", "#44B2BF", "#e5f2f9", "#E9EDDE", "#e2e2e2"]);
+        
+        for (var i = 0; i < assigneeData.length-1; i++) {
+            for (j = 1, t = 0; j < columns.length; ++j){
+                t = t + assigneeData[i][columns[j]];
+            }
+            assigneeData[i].total = t;
+        }
+        var keys = assigneeData.columns.slice(1);
+
+        CABarY.domain(assigneeData.map(function(d) { return d.Categories; }));
+        CABarX.domain([0, d3v4.max(assigneeData, function(d) { return d.total; })]).nice();
+        CABarZ.domain(keys);
+
+        CABarG.append("g")
+            .selectAll("g")
+            .data(d3v4.stack().keys(keys)(assigneeData))
+            .enter().append("g")
+            .attr("fill", function(d) { return CABarZ(d.key); })
+            .attr("transform", "translate(0,18)")
+            .selectAll("rect")
+            .data(function(d) { return d; })
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("y", function(d) { return CABarY(d.data.Categories); })
+            .attr("x", function(d) { return CABarX(d[0]); })
+            .attr("width", function(d) { return CABarX(d[1]) - CABarX(d[0]); })
+            .attr("height", CABarY.bandwidth());
+
+        CABarG.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0,18)")
+            .call(d3v4.axisLeft(CABarY).tickSize(0));
+
+        CABarG.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0,0)")
+            .call(d3v4.axisBottom(CABarX).ticks(null).tickSize(0).tickFormat(d3.format("d")))
+            .append("text")
+            .attr("y", 0)
+            .attr("x", CABarX(CABarX.ticks().pop()) - 1)
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("text-anchor", "start")
+            .text("Number of P/PA")
+            .attr("transform", "translate("+ (-CABarWidth) +",-10)");
+            
+        var CABarLegend = CABarG.append("g")
+            .attr("transform", "translate(50,-200)")
+            .attr("font-size", 16)
+            .attr("text-anchor", "end")
+            .selectAll("g")
+            .data(keys.slice().reverse())
+            .enter().append("g")
+            //.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+            .attr("transform", function(d, i) { return "translate(-50," + (300 + i * 20) + ")"; });
+        
+        CABarLegend.append("rect")
+            .attr("x", CABarWidth - 19)
+            .attr("width", 19)
+            .attr("height", 19)
+            .attr("fill", CABarZ);
+        
+        CABarLegend.append("text")
+            .attr("x", CABarWidth - 24)
+            .attr("y", 9.5)
+            .attr("dy", "0.32em")
+            .text(function(d) { return d; });
+
+        d3v4.select("#download-ca-bar-svg")
+        .on('click', function(){
+            saveSvgAsPng(document.getElementById("ca-bar-svg"), "Top Assignees", {scale: 7});
+        })
+        var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(assigneeData)));
+        var dlAnchorElem = document.getElementById('download-ca-bar-raw');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Top Assignees.csv");
+    </script>
+</div>
+
+<!-- View of Top Assignees and their P/PA Counts per Year -->
+<div class="row">
+    <h4>Top Assignees and their P/PA Counts per Year</h4>
+</div>
+<div class="row">
+    <button id="download-ca-heatmap-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-ca-heatmap-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row"> 
+    <div class="CAHeatmap"></div>
+    <script>
+        var itemSize = 30,
+            cellSize = itemSize - 1,
+            margin = {top: 40, right: 20, bottom: 20, left: 230};
+
+        var heatMapWidth1 = 1200 - margin.right - margin.left,
+            heatMapHeight1 = 500 - margin.top - margin.bottom;
+        
+        var minCount2 = "{{minCount2}}";
+        var maxCount2 = "{{maxCount2}}";
+        var heatMapColors = ["#e5f2f9", "#2D777F"]
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ assigneeYearData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var assigneeYearData = JSON.parse(decodedString);
+        assigneeYearData = Object.values(assigneeYearData);
+        assignees = assigneeYearData.map(function( item ) {
+            var newItem = {};
+            newItem.categories = item.Categories;
+            return newItem;
+        });
+        var y_elements2 = d3.set(assignees.map(function( item ) { return item.categories;})).values();
+        assigneeYearData = assigneeYearData.map(function( item ) {
+            var newItem = {};
+            newItem.years = item.Years;
+            newItem.categories = item.Categories;
+            newItem.nppa = item.nPPA;    
+            return newItem;
+        });
+        assigneeYearData = assigneeYearData.filter(function(n){ return n.years != "9999" }); 
+        var x_elements2 = d3.set(assigneeYearData.map(function( item ) { return item.years;})).values();
+
+        var xScale2 = d3.scale.ordinal()
+            .domain(x_elements2)
+            .rangeBands([0, x_elements2.length * itemSize]);
+    
+        var xAxis2 = d3.svg.axis()
+            .scale(xScale2)
+            .tickFormat(function (d) {
+                return d;
+            })
+            .orient("top")
+            .tickSize(0);
+    
+        var yScale2 = d3.scale.ordinal()
+            .domain(y_elements2)
+            .rangeBands([0, y_elements2.length * itemSize]);
+    
+        var yAxis2 = d3.svg.axis()
+            .scale(yScale2)
+            .tickFormat(function (d) {
+                return d;
+            })
+            .orient("left")
+            .tickSize(0);
+
+        var colorScale2 = d3.scale.linear()
+            .domain([minCount2, maxCount2])
+            .range(heatMapColors);
+    
+        var heatMapSVG2 = d3.select('.CAHeatmap')
+            .append("svg")
+            .attr("id", "ca-heatmap-svg")  
+            .attr("width", heatMapWidth1 + margin.left + margin.right)
+            .attr("height", heatMapHeight1 + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + ", 50)");
+    
+        var cells2 = heatMapSVG2.selectAll('rect')
+            .data(assigneeYearData)
+            .enter().append('g').append('rect')
+            .attr('class', 'cell')
+            .attr('width', cellSize)
+            .attr('height', cellSize)
+            .attr('y', function(d) { return yScale2(d.categories); })
+            .attr('x', function(d) { return xScale2(d.years); })
+            .attr('fill', function(d) { return colorScale2(d.nppa); });
+    
+        heatMapSVG2.append("g")
+            .attr("class", "y axis")
+            .call(yAxis2)
+            .selectAll('text')
+            // .attr('font-weight', 'normal');
+    
+        heatMapSVG2.append("g")
+            .attr("class", "x axis")
+            .call(xAxis2)
+            .selectAll('text')
+            // .attr('font-weight', 'normal')
+            .style("text-anchor", "start")
+            .attr("dx", ".8em")
+            .attr("dy", ".5em")
+            .attr("transform", function (d) {
+                return "rotate(-90)";
+        });
+
+        d3v4.select("#download-ca-heatmap-svg")
+        .on('click', function(){
+            saveSvgAsPng(document.getElementById("ca-heatmap-svg"), "Top Assignees vs Years", {scale: 7});
+        })
+        var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(assigneeYearData)));
+        var dlAnchorElem = document.getElementById('download-ca-heatmap-raw');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Top Assignees vs Years.csv");
+
+    </script>
+</div>
+
+<!-- View of Top Assignees and their Patenting Year -->
+<div class="row">
+    <h4>Patenting Trend of Top Assignees </h4>
+</div>
+<div class="row" id="smallMultipleDiv">
+    <style>
+        .line {
+        fill: none;
+        stroke:#2D777F;
+        stroke-width: 2px;
+        }
+
+        .area {
+        fill:#e5f2f9;
+        }
+        .area:hover {
+            fill: #5BEEFF ;
+        }
+    </style>
+    <script>
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ smallMultipleData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var smallMultipleData = JSON.parse(decodedString);
+        smallMultipleData = Object.values(smallMultipleData);
+        var margin = {top: 8, right: 10, bottom: 2, left: 10},
+            width = 300 - margin.left - margin.right,
+            height = 150 - margin.top - margin.bottom;
+        console.log(smallMultipleData);
+
+        var x = d3.time.scale()
+            .range([0, width]);
+
+        var y = d3.scale.linear()
+            .range([height, 0]);
+
+        var area = d3.svg.area()
+            .x(function(d) { return x(d.Years); })
+            .y0(height)
+            .y1(function(d) { return y(+d.nPPA); });
+
+        var line = d3.svg.line()
+            .x(function(d) { return x(d.Years); })
+            .y(function(d) { return y(+d.nPPA); });
+
+        var assignees = d3.nest()
+            .key(function(d) { return d.CurrentAssignees; })
+            .entries(smallMultipleData);
+
+        // Compute the maximum price per assignees, needed for the y-domain.
+        assignees.forEach(function(s) {
+            s.maxPrice = d3.max(s.values, function(d) { return +d.nPPA; });
+        });
+
+        // Compute the minimum and maximum date across assignees.
+        // We assume values are sorted by date.
+        x.domain([
+            d3.min(assignees, function(s) { return s.values[0].Years; }),
+            d3.max(assignees, function(s) { return s.values[s.values.length - 1].Years; })
+        ]);
+
+        // Add an SVG element for each assignees, with the desired dimensions and margin.
+        var svg = d3.select("#smallMultipleDiv").selectAll("svg")
+            .data(assignees)
+            .enter().append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // Add the area path elements. Note: the y-domain is set per element.
+        svg.append("path")
+            .attr("class", "area")
+            .attr("d", function(d) { y.domain([0, d.maxPrice]); return area(d.values); });
+
+        // Add the line path elements. Note: the y-domain is set per element.
+        svg.append("path")
+            .attr("class", "line")
+            .attr("d", function(d) { y.domain([0, d.maxPrice]); return line(d.values); });
+
+        // Add a small label for the assignees name.
+        svg.append("text")
+            .attr("x", width - 6)
+            .attr("y", height - 6)
+            .style("text-anchor", "end")
+            .text(function(d) { return d.key; });
+
+    </script>
+</div>
+
+
+<!-- View of Top Assignees vs Top Categories -->
+<div class="row">
+    <h4>Top Assignees vs Top {{classification}}</h4>
+</div>
+<div class="row">
+    <button id="download-ca-categories-heatmap-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-ca-categories-heatmap-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div>
+<div class="row">
+    <div class="CACategoriesHeatmap"></div>
+    <script>
+        var itemSize = 30,
+            cellSize = itemSize - 1,
+            margin = {top: 40, right: 20, bottom: 20, left: 230};
+
+        var heatMapWidth2 = 1200 - margin.right - margin.left,
+            heatMapHeight2 = 640 - margin.top - margin.bottom;
+        
+        var minCount3 = "{{minCount3}}";
+        var maxCount3 = "{{maxCount3}}";
+        var heatMapColors = ["#e5f2f9", "#2D777F"]
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ categoryAssigneeData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var categoryAssigneeData = JSON.parse(decodedString);
+        categoryAssigneeData = Object.values(categoryAssigneeData);
+        assignees = categoryAssigneeData.map(function( item ) {
+            var newItem = {};
+            newItem.assignee = item.CurrentAssignees;
+            return newItem;
+        });
+        var y_elements3 = d3.set(assignees.map(function( item ) { return item.assignee;})).values();
+        categoryAssigneeData = categoryAssigneeData.map(function( item ) {
+            var newItem = {};
+            newItem.years = item.CurrentAssignees;
+            newItem.categories = item.Categories;
+            newItem.nppa = item.nPPA;    
+            return newItem;
+        });
+        categoryAssigneeData = categoryAssigneeData.filter(function(n){ return n.categories != "9999" }); 
+        var x_elements3 = d3.set(categoryAssigneeData.map(function( item ) { return item.categories;})).values();
+
+        var xScale3 = d3.scale.ordinal()
+            .domain(x_elements3)
+            .rangeBands([0, x_elements3.length * itemSize]);
+    
+        var xAxis3 = d3.svg.axis()
+            .scale(xScale3)
+            .tickFormat(function (d) {
+                return d;
+            })
+            .orient("top")
+            .tickSize(0);
+    
+        var yScale3 = d3.scale.ordinal()
+            .domain(y_elements3)
+            .rangeBands([0, y_elements3.length * itemSize]);
+    
+        var yAxis3 = d3.svg.axis()
+            .scale(yScale3)
+            .tickFormat(function (d) {
+                return d;
+            })
+            .orient("left")
+            .tickSize(0);
+    
+        var colorScale3 = d3.scale.linear()
+            .domain([minCount3, maxCount3])
+            .range(heatMapColors);
+    
+        var heatMapSVG3 = d3.select('.CACategoriesHeatmap')
+            .append("svg")
+            .attr("id", "ca-categories-heatmap-svg")  
+            .attr("width", heatMapWidth2 + margin.left + margin.right)
+            .attr("height", heatMapHeight2 + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + ", 200)");
+    
+        var cells3 = heatMapSVG3.selectAll('rect')
+            .data(categoryAssigneeData)
+            .enter().append('g').append('rect')
+            .attr('class', 'cell')
+            .attr('width', cellSize)
+            .attr('height', cellSize)
+            .attr('y', function(d) { return yScale3(d.years); })
+            .attr('x', function(d) { return xScale3(d.categories); })
+            .attr('fill', function(d) { return colorScale3(d.nppa); });
+    
+        heatMapSVG3.append("g")
+            .attr("class", "y axis")
+            .call(yAxis3)
+            .selectAll('text');
+            // .attr('font-weight', 'normal');
+    
+        heatMapSVG3.append("g")
+            .attr("class", "x axis")
+            .call(xAxis3)
+            .selectAll('text')
+            // .attr('font-weight', 'normal')
+            .style("text-anchor", "start")
+            .attr("dx", ".8em")
+            .attr("dy", ".5em")
+            .attr("transform", function (d) {
+                return "rotate(-90)";
+        });
+
+        d3v4.select("#download-ca-categories-heatmap-svg")
+        .on('click', function(){
+            saveSvgAsPng(document.getElementById("ca-categories-heatmap-svg"), "Top Assignees and Top {{classification}}", {scale: 7});
+        })
+        var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(categoryAssigneeData)));
+        var dlAnchorElem = document.getElementById('download-ca-categories-heatmap-raw');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Top Assignees and Top {{classification}}.csv");
+
+    </script>
+</div>
+{% endif %}

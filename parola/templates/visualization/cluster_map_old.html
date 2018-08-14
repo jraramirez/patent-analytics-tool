@@ -1,0 +1,311 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}"/>
+
+<html>
+<head>
+    <title>Cluster Map</title>
+</head>
+<body>
+    <div class="section">
+        <h3>Cluster Map</h3>
+    </div>
+
+    <div class="section">
+        <a href="/visualization"> << Go back </a>
+    </div>
+
+    <div class="section">
+        <table class="form-text">
+            <tr>
+                <td class="label"><label>Data Set: </label></td>
+                <td>
+                    <select onChange="window.location.href=this.value">
+                        {% for dataSet in dataSetNames %}
+                        {% if dataSet == 'index' %}
+                        <option selected="selected" disabled value="/visualization/cluster_map/index/{{classification}}">Choose one</option>
+                        {% elif data_set == dataSet %}
+                        <option selected="selected" value="/visualization/cluster_map/{{data_set}}/{{classification}}">{{data_set}}</option>
+                        {% else %}
+                        <option value="/visualization/cluster_map/{{dataSet}}/{{classification}}">{{dataSet}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="label"><label>Classification: </label></td>
+                <td>
+                    {% if classification == 'category' %}
+                        <input type="radio" name="class-type" value="category" checked="checked" onclick="window.location.href='/visualization/cluster_map/{{data_set}}/category'"> Categories <br>
+                    {% else %}
+                        <input type="radio" name="class-type" value="category" onclick="window.location.href='/visualization/cluster_map/{{data_set}}/category'"> Categories <br>
+                    {% endif %}
+                    {% if classification == 'cpc' %}
+                    <input type="radio" name="class-type" value="cpc" checked="checked" onclick="window.location.href='/visualization/cluster_map/{{data_set}}/cpc'"> CPCs <br>
+                    {% else %}
+                        <input type="radio" name="class-type" value="cpc" onclick="window.location.href='/visualization/cluster_map/{{data_set}}/cpc'"> CPCs <br>
+                    {% endif %}
+                    {% if classification == 'technical_concept' %}
+                    <input type="radio" name="class-type" value="technical_concept" checked="checked" onclick="window.location.href='/visualization/cluster_map/{{data_set}}/technical_concept'"> Technical Concepts <br>
+                    {% else %}
+                        <input type="radio" name="class-type" value="technical_concept" onclick="window.location.href='/visualization/cluster_map/{{data_set}}/technical_concept'"> Technical Concepts <br>
+                    {% endif %}
+                    {% if classification == 'cpc_description' %}
+                    <input type="radio" name="class-type" value="cpc_description" checked="checked" onclick="window.location.href='/visualization/cluster_map/{{data_set}}/cpc_description'"> CPC Descriptions <br>
+                    {% else %}
+                        <input type="radio" name="class-type" value="cpc_description" onclick="window.location.href='/visualization/cluster_map/{{data_set}}/cpc_description'"> CPC Descriptions <br>
+                    {% endif %}
+                    {% if classification == 'category_by_keywords' %}
+                    <input type="radio" name="class-type" value="category_by_keywords" checked="checked" onclick="window.location.href='/visualization/cluster_map/{{data_set}}/category_by_keywords'"> Category by Keywords <br>
+                    {% else %}
+                        <input type="radio" name="class-type" value="category_by_keywords" onclick="window.location.href='/visualization/cluster_map/{{data_set}}/category_by_keywords'"> Category by Keywords <br>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- View of Cluster Map-->
+    <!-- <div class="section">
+        <a href="/visualization/download_line_graph"> Download as </a>
+    </div> -->
+
+    {% if valid %}
+    <h4>Cluster Map</h4>
+    <script>
+        var data_to_query = "{% url 'visualization:input_cluster_map_by_user' %}";
+    </script>
+    <!DOCTYPE html>
+    <meta charset="utf-8">
+    <style>
+        .link {
+            stroke: #ccc;
+            /* opacity: 0.4; */
+        }
+        .node text {
+            pointer-events: none;
+            /* font: sans-serif; */
+        }
+    
+    </style>
+    <svg width="1200" height="1200"></svg>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script>
+        //Constants for the SVG
+        
+        colors = ["#5BEEFF", "#173B40", "#51D6E5", "#44B2BF", "#2D777F", "#e5f2f9", "#E9EDDE", "#e2e2e2", "#e6e6e6", "#cacaca", "#8a8a8a"]
+        color = d3.scale.linear().domain([1, colors.length])
+                .range(colors);
+        
+        maxNodeSize = "{{maxNodeSize}}";
+        minNodeSize = "{{minNodeSize}}";
+        maxEdgeWeight = "{{maxEdgeWeight}}";
+
+        var width = Math.max(maxNodeSize*5, 1200),
+            height = Math.max(maxNodeSize*5, 1200);
+
+        //Set up the force layout
+        var force = d3.layout.force()
+            // .charge(-120)
+            .charge(-120);
+            // .linkDistance(100)
+            // .size([width, height]);
+
+        //Append a SVG to the body of the html page. Assign this SVG as an object to svg
+        var svg = d3.select("svg")
+            .attr("width", width)
+            .attr("height", height);
+                        
+        d3.json(data_to_query, function(data) {
+            graph = JSON.parse(JSON.stringify(data));
+            // graphRec = JSON.parse(JSON.stringify(graph)); //Add this line 
+        
+            //Creates the graph data structure out of the json data
+            force.nodes(graph.nodes)
+                .charge(function(d) {
+                return (maxNodeSize - d.size)/maxNodeSize*100;
+                })
+                .links(graph.links)
+                .linkDistance(function(d) {
+                return (maxEdgeWeight - d.weight)/maxEdgeWeight*maxEdgeWeight*4;
+                })
+                .start();
+        
+            //Create all the line svgs but without locations yet
+            var link = svg.selectAll(".link")
+                .data(graph.links)
+                .enter().append("line")
+                .attr("class", "link")
+                .style("stroke-width", function (d) {
+                return d.weight/maxEdgeWeight*100;
+                // return d.weight/2;
+            });
+                
+            //Toggle stores whether the highlighting is on
+            var toggle = 0;
+            //Create an array logging what is connected to what
+            var linkedByIndex = {};
+            for (i = 0; i < graph.nodes.length; i++) {
+                linkedByIndex[i + "," + i] = 1;
+            };
+            graph.links.forEach(function (d) {
+                linkedByIndex[d.source.index + "," + d.target.index] = 1;
+            });
+
+
+            //This function looks up whether a pair are neighbours
+            function neighboring(a, b) {
+                return linkedByIndex[a.index + "," + b.index];
+            }
+            function connectedNodes() {
+                if (toggle == 0) {
+                    //Reduce the opacity of all but the neighbouring nodes
+                    d = d3.select(this).node().__data__;
+                    node.style("opacity", function (o) {
+                        return neighboring(d, o) | neighboring(o, d) ? 1 : 0.05;
+                    });
+                    link.style("opacity", function (o) {
+                        return d.index==o.source.index | d.index==o.target.index ? 1 : 0.05;
+                    });
+                    //Reduce the op
+                    toggle = 1;
+                } else {
+                    //Put them back to opacity=1
+                    node.style("opacity", 1);
+                    // link.style("opacity", 0.4);
+                    toggle = 0;
+                }
+            }
+        
+            //Pinning down nodes
+            var node_drag = d3.behavior.drag()
+                    .on("dragstart", dragstart)
+                    .on("drag", dragmove)
+                    .on("dragend", dragend);
+                function dragstart(d, i) {
+                    force.stop() // stops the force auto positioning before you start dragging
+                }
+                function dragmove(d, i) {
+                    d.px += d3.event.dx;
+                    d.py += d3.event.dy;
+                    d.x += d3.event.dx;
+                    d.y += d3.event.dy;
+                }
+                function dragend(d, i) {
+                    d.fixed = true; // of course set the node to fixed so the force doesn't include the node in its auto positioning stuff
+                    force.resume();
+                }
+                function releasenode(d) {
+                    d.fixed = false; // of course set the node to fixed so the force doesn't include the node in its auto positioning stuff
+                    //force.resume();
+                }
+        
+            var node = svg.selectAll(".node")
+                .data(graph.nodes)
+                .enter().append("g")
+                .attr("class", "node")
+                .call(force.drag);
+            
+            node.call(d3.behavior.zoom().on("zoom", function () {
+            svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
+            }))
+            .on("dblclick.zoom", null)
+            .on("mousedown.zoom", null)
+            .on("touchstart.zoom", null)
+            .on("touchmove.zoom", null)
+            .on("touchend.zoom", null);
+
+            node.append("circle")
+                // .attr("r", function(d) { return 24; })
+                // .attr("r", function(d) { return d.size/8; })
+                // .attr("r", function(d) { return Math.sqrt(d.size); })
+                .attr("r", function(d) { return d.size/maxNodeSize*100; })
+                // .attr("r", function(d) { return d.size; })
+                .style("fill", function (d) {
+                // return color(d.group);
+                return colors[d.group];
+            });
+        
+            node.append("text")
+                .attr("dx", 0)
+                .attr("dy", 8)
+                .text(function(d) { return d.name })
+                //   .style("stroke", "black")
+                    .attr("fill", "black")
+                    .attr("text-anchor", "middle")
+                    // .attr("font-size", function(d) { return d.size/8; })
+                    .attr("font-size", function(d) { return d.size/maxNodeSize*50; })
+                    // .attr("font-size", function(d) { return d.size/3; })
+                    // .attr("font-size", function(d) { return 12; })
+                    .attr("font-family", "sans-serif")
+        
+            node.on('dblclick', releasenode)
+            .on('dblclick', connectedNodes) //Added code 
+            .call(node_drag); //Added 
+        
+            var padding = 1, // separation between circles
+                radius=12;
+            function collide(alpha) {
+                var quadtree = d3.geom.quadtree(graph.nodes);
+                return function(d) {
+                    // var rb = d.size + padding,
+                    var rb = d.size/maxNodeSize*100 + padding,
+                    // var rb = Math.sqrt(d.size)*4 + padding,
+                    // var rb = 2*d.size + padding,
+                    // var rb = 2*radius + padding,
+                        nx1 = d.x - rb,
+                        nx2 = d.x + rb,
+                        ny1 = d.y - rb,
+                        ny2 = d.y + rb;
+                    quadtree.visit(function(quad, x1, y1, x2, y2) {
+                    if (quad.point && (quad.point !== d)) {
+                        var x = d.x - quad.point.x,
+                            y = d.y - quad.point.y,
+                            l = Math.sqrt(x * x + y * y);
+                        if (l < rb) {
+                        l = (l - rb) / l * alpha;
+                        d.x -= x *= l;
+                        d.y -= y *= l;
+                        quad.point.x += x;
+                        quad.point.y += y;
+                        }
+                    }
+                    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+                    });
+                };
+            }
+            
+            //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
+            force.on("tick", function () {
+                link.attr("x1", function (d) {
+                    return d.source.x;
+                })
+                    .attr("y1", function (d) {
+                    return d.source.y;
+                })
+                    .attr("x2", function (d) {
+                    return d.target.x;
+                })
+                    .attr("y2", function (d) {
+                    return d.target.y;
+                });
+                d3.selectAll("circle").attr("cx", function (d) {
+                    return d.x;
+                })
+                    .attr("cy", function (d) {
+                    return d.y;
+                });
+                d3.selectAll("text").attr("x", function (d) {
+                    return d.x;
+                })
+                    .attr("y", function (d) {
+                    return d.y;
+                });
+                node.each(collide(0.5));
+            });            
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

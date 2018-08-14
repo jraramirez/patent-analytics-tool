@@ -1,0 +1,15 @@
+<div class="row">
+    <h3>Category Sets</h3>
+</div>
+
+{% for categorySetName in categorySetNames %}
+<div class="row">
+    <a href="/data_tools/view_category_sets/{{categorySetName}}"> {{categorySetName}} </a>
+</div>
+{% endfor %}
+
+{% if keywordsDFHTML %}
+<div class="row">
+    {{keywordsDFHTML | safe}}
+</div>
+{% endif %}

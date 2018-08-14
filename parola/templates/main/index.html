@@ -1,0 +1,101 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/bootstrap.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/custom.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}"/>
+
+    <script src="{% static 'd3.v4.min.js' %}"></script>
+    <script src="{% static 'd3.v3.min.js' %}"></script>
+    <script src="{% static 'JSONToCSV.js' %}"></script>
+    <script src="{% static 'saveSvgAsPng.js' %}"></script>
+    <title>Parola One</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand js-scroll-trigger" href="#page-top"><img src="{% static 'assets/img/parola-icon.svg' %}" width="30" height="30" class="d-inline-block align-top" alt="">&nbsp;Parola One</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="javascript:;" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Datasets
+                    </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="/data_sets/new_data_setup">New Data Setup</a>
+                    <a class="dropdown-item" href="/data_sets/index">View Data Sets</a>
+                </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="javascript:;" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    USPTO Trends
+                    </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="/uspto/general_trends/index">General Trends</a>
+                    <a class="dropdown-item" href="/uspto/assignee_trends/index">Assignee Trends</a>
+                    <a class="dropdown-item" href="/uspto/sector_trends/index">Sector Trends</a>
+                    <a class="dropdown-item" href="/uspto/industry_trends/index">Industry Trends</a>
+                </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="javascript:;" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Data Tools
+                    </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="/data_tools/categorize_by_keywords/index/index"> Categorize By Keywords </a>
+                        <a class="dropdown-item" href="/data_tools/new_category_set_keywords"> -- New Category Set Keywords</a>
+                        <a class="dropdown-item" href="/data_tools/view_category_sets/index"> -- View Category Sets</a>
+                        <a class="dropdown-item" href="/data_tools/categorize_by_keywords/index/index"> -- Categorize By Keywords </a>
+                    <a class="dropdown-item" href="/data_tools/automated_patent_classification/index/index"> Automated Patent Classification </a>
+                        <a class="dropdown-item" href="/data_tools/new_training_setup"> -- New Training Setup </a>
+                        <a class="dropdown-item" href="/data_tools/view_training_sets"> -- View Training Sets</a>
+                        <a class="dropdown-item" href="/data_tools/automated_patent_classification/index/index"> -- Automated Patent Classification </a>
+                    <a class="dropdown-item" href="/parola_refine/index"> Parola Refine </a>
+                        <a class="dropdown-item" href="/parola_refine/reference_update"> -- Reference Update </a>
+                        <a class="dropdown-item" href="/parola_refine/assignee_grouping/index"> -- Assignee Grouping </a>
+                </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="javascript:;" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Visualization
+                    </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="/visualization/dataset_statistics/index/cpc"> Dataset Statistics </a>
+                    <a class="dropdown-item" href="/visualization/category_statistics/index/index/index"> Category Statistics </a>
+                    <a class="dropdown-item" href="/visualization/assignee_statistics/index/index/index"> Assignee Statistics </a>
+                    <a class="dropdown-item" href="/visualization/cluster_map/index/index/cpc"> Category Cluster Map </a>
+                    <a class="dropdown-item" href="/visualization/word_cluster_map/index/index"> Word Cluster Map </a>
+                    <a class="dropdown-item" href="/visualization/landscape_map/index"> Landscape Map </a>
+                </div>
+                </li>
+            </ul>
+        </div>
+        </div>
+    </nav>
+    <section class="body-content">
+        <div class="container">
+            {% autoescape off %}
+            {{mainHTML | safe}}
+            {% endautoescape %}
+        </div>
+    </section>
+    <!-- <footer class="footer bg-dark"> -->
+    <!-- <footer> -->
+        <!-- <div class="container">
+            <span class="text-white text-center">2018 Parola Analytics. All rights reserved.</span>
+        </div> -->
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- </footer> -->
+    <script src="{% static 'assets/js/jquery-3.3.1.slim.min.js' %}" integrity="" crossorigin="anonymous"></script>
+    <script src="{% static 'assets/js/popper.min.js' %}" integrity="" crossorigin="anonymous"></script>
+    <script src="{% static 'assets/js/bootstrap.min.js' %}" integrity="" crossorigin="anonymous"></script>
+</body>
+</html>

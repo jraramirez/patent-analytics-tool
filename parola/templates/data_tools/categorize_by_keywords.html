@@ -1,0 +1,68 @@
+<div class="row">
+    <h3>Categorize by Keywords</h3>
+</div>
+<div class="row">
+    <table class="form-text">
+        <tr>
+            <td class="label"><label class="control-label">Data Set: </label></td>
+            <td>
+                <select class="form-control" onChange="window.location.href=this.value">
+                    {% for dataSet in dataSetNames %}
+                    {% if dataSet == 'index' %}
+                    <option selected="selected" disabled value="/data_tools/categorize_by_keywords/index/index">Choose one</option>
+                    {% elif data_set == dataSet %}
+                    <option selected="selected" value="/data_tools/categorize_by_keywords/{{data_set}}/{{category_set}}">{{data_set}}</option>
+                    {% else %}
+                    <option value="/data_tools/categorize_by_keywords/{{dataSet}}/{{category_set}}">{{dataSet}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="label"><label class="control-label">Category Set: </label></td>
+            <td>
+                <select class="form-control" onChange="window.location.href=this.value">
+                    {% for categorySet in categorySetNames %}
+                    {% if categorySet == 'index' %}
+                    <option selected="selected" disabled>Choose one</option>
+                    {% elif category_set == categorySet %}
+                    <option selected="selected" value="/data_tools/categorize_by_keywords/{{data_set}}/{{categorySet}}">{{categorySet}}</option>
+                    {% else %}
+                    <option value="/data_tools/categorize_by_keywords/{{data_set}}/{{categorySet}}">{{categorySet}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <form action="" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        <tr>
+            <td class="label"><label class="control-label">Features: </label></td>
+            <td><input type="checkbox" name="features" value="titles" checked="checked">Titles</td>
+        </tr>
+        <tr>
+            <td class="label"><label class="control-label"></label></td>
+            <td><input type="checkbox" name="features" value="abstracts" checked="checked">Abstracts</td>
+        </tr>
+        <tr>
+            <td class="label"><label class="control-label"></label></td>
+            <td><input type="checkbox" name="features" value="independentclaims" checked="checked">Independent Claims</td>
+        </tr>
+        {% if hasDataSet and hasCategorySet %}
+        <tr>
+            <td class="label"><label class="control-label"></label></td>
+            <td>
+                <input class="btn btn-info" type="submit" value="Process" name="process">
+            </td>
+        </tr>
+        </form>
+        {% endif %}
+    </table>
+</div>
+
+{% if valid %}
+<div class="row">
+    <a href="/visualization/dataset_statistics/{{data_set}}/category_by_keywords">Check results here</a>
+</div>
+{% endif %}

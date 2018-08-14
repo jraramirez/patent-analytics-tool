@@ -1,0 +1,52 @@
+<div class="row">
+    <h3>Parola Refine - Assignee Grouping</h3>
+</div>
+<div class="row">
+    <form action="" enctype="multipart/form-data" method="post">
+        <table class="form-text">
+            <tr>
+                <td class="label"><label class="control-label">Data Set: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for dataSet in dataSetNames %}
+                        {% if dataSet == 'index' %}
+                        <option selected="selected" disabled value="/parola_refine/assignee_grouping/index">Choose one</option>
+                        {% elif data_set == dataSet %}
+                        <option selected="selected" value="/parola_refine/assignee_grouping/{{data_set}}">{{data_set}}</option>
+                        {% else %}
+                        <option value="/parola_refine/assignee_grouping/{{dataSet}}">{{dataSet}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<!-- View of Assignee Grouping Results File
+    {% if assigneeGroupingHTML %}
+    <div class="row">
+        <h4>Assignee Grouping</h4>
+        <p class="subheader">Summary</p>
+        <div class="scroll-vertical">
+        {% if assigneeGroupingSummaryHTML %}
+            {{ assigneeGroupingSummaryHTML | safe}}
+        {% endif %}
+        </div>
+        <p class="subheader">Results</p>
+        <a href="/parola_refine/download_assignee_grouping"> Download Results as an Excel File </a>
+        <div class="scroll-both">
+        {{ assigneeGroupingHTML | safe}}
+        </div>
+    </div>
+    {% endif %}
+-->
+{% if assigneeGroupingHTML %}
+<div class="row">
+    <h4>Results</h4>
+</div>
+<div class="scroll-both">
+{{ assigneeGroupingHTML | safe}}
+</div>
+{% endif %}

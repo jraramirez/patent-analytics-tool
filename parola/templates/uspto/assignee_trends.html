@@ -1,0 +1,136 @@
+<div class="row">
+    <h3>USPTO Assignees</h3>
+</div>
+<div class="row">
+    <table class="form-text">
+        <tr>
+            <td class="label"><label class="control-label">Latest Date: </label></td>
+            <td>
+                <select class="form-control" onChange="window.location.href=this.value">
+                    {% for d in dates %}
+                    {% if date == d %}
+                    <option selected="selected" value="/uspto/general_trends/{{date}}">{{date}}</option>
+                    {% else %}
+                    <option value="/uspto/general_trends/{{d}}">{{d}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <form action="" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        <tr>
+            <td class="label"><label class="control-label">Limit Rankings to Top: </label></td>
+            <td>
+                <input class="form-control" type="number" value="{{targetN}}" name="target-n">
+            </td>
+        </tr>  
+        </form>
+    </table>
+</div>
+<div class="row">
+    <h4>Weekly Number of Patents</h4>
+</div>
+<!-- <div class="row">
+    <button id="download-area-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+        Download Chart
+        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+    </button>
+    <a id="download-area-raw" class="btn btn-default" role="button">
+        Download Raw Data
+        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    </a>
+</div> -->
+<div class="row" id="areaDiv">
+    <style>
+        .line {
+        fill: none;
+        stroke:#2D777F;
+        stroke-width: 2px;
+        }
+
+        .area {
+        fill:#e5f2f9;
+        }
+        .area:hover {
+            fill: #5BEEFF ;
+        }
+    </style>
+    <script>
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ areaData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var areaData = JSON.parse(decodedString);
+            areaData = Object.values(areaData);
+        var margin = {top: 8, right: 10, bottom: 2, left: 10},
+            width = 300 - margin.left - margin.right,
+            height = 150 - margin.top - margin.bottom;
+
+        var parseDate = d3v4.timeParse("%Y%m%d");
+
+        var x = d3.time.scale()
+            .range([0, width]);
+
+        var y = d3.scale.linear()
+            .range([height, 0]);
+
+        var area = d3.svg.area()
+            .x(function(d) { return x(parseDate(d.Dates)); })
+            .y0(height)
+            .y1(function(d) { return y(+d.nPPA); });
+
+        var line = d3.svg.line()
+            .x(function(d) { return x(parseDate(d.Dates)); })
+            .y(function(d) { return y(+d.nPPA); });
+
+        var assignees = d3.nest()
+            .key(function(d) { return d.CurrentAssignees; })
+            .entries(areaData);
+
+        assignees.forEach(function(s) {
+            s.maxPrice = d3.max(s.values, function(d) { return +d.nPPA; });
+        });
+
+        // Compute the minimum and maximum date across sectors.
+        // We assume values are sorted by date.
+        x.domain([
+            d3.min(assignees, function(s) { return parseDate(s.values[0].Dates); }),
+            d3.max(assignees, function(s) { return parseDate(s.values[s.values.length - 1].Dates); })
+        ]);
+
+        // Add an SVG element for each assignees, with the desired dimensions and margin.
+        var svg = d3.select("#areaDiv").selectAll("svg")
+            .data(assignees)
+            .enter().append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // Add the area path elements. Note: the y-domain is set per element.
+        svg.append("path")
+            .attr("class", "area")
+            .attr("d", function(d) { y.domain([0, d.maxPrice]); return area(d.values); });
+
+        // Add the line path elements. Note: the y-domain is set per element.
+        svg.append("path")
+            .attr("class", "line")
+            .attr("d", function(d) { y.domain([0, d.maxPrice]); return line(d.values); });
+
+        // Add a small label for the assignees name.
+        svg.append("text")
+            .attr("x", width - 6)
+            .attr("y", height - 6)
+            .style("text-anchor", "end")
+            .text(function(d) { return d.key; });
+
+        d3v4.select("#download-area-svg")
+        .on('click', function(){
+            saveSvgAsPng(document.getElementById("area-svg"), "Number of P/PA per Year (Area).png", {scale: 10});
+        })
+        var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(areaData)));
+        var dlAnchorElem = document.getElementById('download-area-raw');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Number of P/PA per Year (Area).csv");
+    </script>
+</div>
