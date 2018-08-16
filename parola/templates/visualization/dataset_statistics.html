@@ -1,97 +1,99 @@
 {% load app_filters %}
 
-<div class="row">
-    <h3>Data Set Statistics</h3>
-</div>
-<div class="row">
-    {% if not hasDataSet %}
-    <table class="form-text">
-        <tr>
-            <td class="label"><label class="control-label">Data Set: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for dataSet in dataSetNames %}
-                    {% if dataSet == 'index'%}
-                    <option selected="selected" disabled value="/visualization/dataset_statistics/index/index">Choose one</option>
-                    {% elif data_set == dataSet %}
-                    <option selected="selected" value="/visualization/dataset_statistics/{{data_set}}/{{classification}}">{{data_set}}</option>
-                    {% else %}
-                    <option value="/visualization/dataset_statistics/{{dataSet}}/{{classification}}">{{dataSet}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label">Classification: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for classificationName in classificationNames %}
-                    {% if classificationName == 'index'%}
-                    <option selected="selected" disabled value="/">Choose one</option>
-                    {% elif classification == classificationName %}
-                    <option selected="selected" value="/visualization/dataset_statistics/{{data_set}}/{{classification}}">{{classification}}</option>
-                    {% else %}
-                    <option value="/visualization/dataset_statistics/{{data_set}}/{{classificationName}}">{{classificationName}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-    {% endif %}
+<!-- View of P/PA Per Year (Line) -->
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h3>Data Set Statistics</h3>
+    </div>
+    <div>
+        {% if not hasDataSet %}
+        <table class="form-text">
+            <tr>
+                <td class="label"><label class="control-label">Data Set: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for dataSet in dataSetNames %}
+                        {% if dataSet == 'index'%}
+                        <option selected="selected" disabled value="/visualization/dataset_statistics/index/index">Choose one</option>
+                        {% elif data_set == dataSet %}
+                        <option selected="selected" value="/visualization/dataset_statistics/{{data_set}}/{{classification}}">{{data_set}}</option>
+                        {% else %}
+                        <option value="/visualization/dataset_statistics/{{dataSet}}/{{classification}}">{{dataSet}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label">Classification: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for classificationName in classificationNames %}
+                        {% if classificationName == 'index'%}
+                        <option selected="selected" disabled value="/">Choose one</option>
+                        {% elif classification == classificationName %}
+                        <option selected="selected" value="/visualization/dataset_statistics/{{data_set}}/{{classification}}">{{classification}}</option>
+                        {% else %}
+                        <option value="/visualization/dataset_statistics/{{data_set}}/{{classificationName}}">{{classificationName}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+        {% endif %}
 
+        {% if nPPA %}
+            <form action="" enctype="multipart/form-data" method="post">
+            {% csrf_token %}
+            <tr>
+                <td class="label"><label class="control-label">Limit Rankings to Top: </label></td>
+                <td>
+                    <input class="form-control" type="number" value="{{targetN}}" name="target-n">
+                </td>
+            </tr>  
+            <tr>
+                <td class="label"><label class="control-label">Limit Number of Years: </label></td>
+                <td>
+                    <input class="form-control" type="number" value="{{previousNYears}}" name="target-n-years">
+                </td>
+            </tr>  
+            <tr>
+                <td class="label"><label class="control-label"></label></td>
+                <td>
+                    <input class="btn btn-info" type="submit" value="Update" name="update">
+                </td>
+            </tr>
+            </form>
+        </table>
+        {% endif %}
+    </div>
     {% if nPPA %}
-        <form action="" enctype="multipart/form-data" method="post">
-        {% csrf_token %}
-        <tr>
-            <td class="label"><label class="control-label">Limit Rankings to Top: </label></td>
-            <td>
-                <input class="form-control" type="number" value="{{targetN}}" name="target-n">
-            </td>
-        </tr>  
-        <tr>
-            <td class="label"><label class="control-label">Limit Number of Years: </label></td>
-            <td>
-                <input class="form-control" type="number" value="{{previousNYears}}" name="target-n-years">
-            </td>
-        </tr>  
-        <tr>
-            <td class="label"><label class="control-label"></label></td>
-            <td>
-                <input class="btn btn-info" type="submit" value="Update" name="update">
-            </td>
-        </tr>
-        </form>
-    </table>
+    <div>
+        <h4>Number of P/PA</h4>
+    </div>
+    <div>
+        <h1>{{nPPA}}</h1>
+    </div>
     {% endif %}
 </div>
 
+<!-- View of P/PA Per Year (Line) -->
 {% if nPPA %}
-<div class="row">
-    <h4>Number of P/PA</h4>
-</div>
-<div class="row">
-    <h1>{{nPPA}}</h1>
-</div>
-{% endif %}
-
-{% if nPPA %}
-<!-- View of P/PA Per Year -->
-<div class="row">
-    <h4>Number of P/PA per Year</h4>
-</div>
-<div class="row">
-    <button id="download-line-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-line-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
-    <svg width="768" height="360" id="line-svg"></svg>    
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Number of P/PA per Year</h4>
+    </div>
+    <div>
+        <svg width="768" height="360" id="line-svg"></svg>    
+    </div>
+    <div>
+        <button id="download-line-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-line-raw" class="btn btn-light" role="button">
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
         var parser = new DOMParser;
         var dom = parser.parseFromString("{{ yearData }}", 'text/html');
@@ -149,21 +151,22 @@
         dlAnchorElem.setAttribute("download", "Number of P/PA per Year.csv");        
     </script>
 </div>
-<!-- View of P/PA Per Year -->
-<div class="row">
-    <h4>Number of P/PA per Year</h4>
-</div>
-<div class="row">
-    <button id="download-area-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-area-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row" id="areaDiv">
+
+<!-- View of P/PA Per Year (Area) -->
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Number of P/PA per Year</h4>
+    </div>
+    <div id="areaDiv">
+    </div>
+    <div>
+        <button id="download-area-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-area-raw" class="btn btn-light" role="button">
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
         var parser = new DOMParser;
         var dom = parser.parseFromString("{{ areaData }}", 'text/html');
@@ -271,21 +274,23 @@
 </div>
 
 <!-- View of Top Categories -->
-<div class="row">    
-    <h4>Top {{classification}}</h4>
-</div>
-<div class="row">
-    <button id="download-category-bar-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-category-bar-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
-    <svg width="768" id="category-bar-svg"></svg>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>    
+        <h4>Top {{classification}}</h4>
+    </div>
+    <div>
+        <svg width="768" id="category-bar-svg"></svg>
+    </div>
+    <div>
+        <button id="download-category-bar-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-category-bar-raw" class="btn btn-light" role="button">
+
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
         var parser = new DOMParser;
         var dom = parser.parseFromString("{{ categoryData }}", 'text/html');
@@ -396,23 +401,25 @@
     </script>
 </div>
 
-{% if False%}
 <!-- View of Top Categories -->
-<div class="row">    
-    <h4>Top {{classification}}</h4>
-</div>
-<div class="row">
-    <button id="download-category-percent-bar-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-category-percent-bar-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
-    <svg class="chart" id="category-percent-bar-svg"></svg>
+{% if False %}
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>    
+        <h4>Top {{classification}}</h4>
+    </div>
+    <div>
+        <svg class="chart" id="category-percent-bar-svg"></svg>
+    </div>
+    <div>
+        <button id="download-category-percent-bar-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-category-percent-bar-raw" class="btn btn-light" role="button">
+
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
     var categoryPercentWidth = 800,
         categoryPercentBarHeight = 30,
@@ -485,49 +492,51 @@
 </div>
 {% endif %}
 
-{% if CPCLegend %}
 <!-- View of CPC Legend -->
-<div class="row">
-    <h4>CPC Descriptions</h4>
-</div>
-<div class="row">
-    <table>
-        <tr>
-            <th>CPC</th>
-            <th>Descriptions</th>
-        </tr>
-        {% for CPC, CPCDescription in CPCLegend %}
-        <tr>
-            <td>{{CPC | upper}}</td>
-            <td>{{CPCDescription}}</td>
-        </tr>
-        {% endfor %}
-    </table>
+{% if CPCLegend %}
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>CPC Descriptions</h4>
+    </div>
+    <div>
+        <table>
+            <tr>
+                <th>CPC</th>
+                <th>Descriptions</th>
+            </tr>
+            {% for CPC, CPCDescription in CPCLegend %}
+            <tr>
+                <td>{{CPC | upper}}</td>
+                <td>{{CPCDescription}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 </div>
 {% endif %}
 
 <!-- View of Number of P/PA Per Category Per Year -->    
-<div class="row">
-    <h4>Top {{classification}} and their P/PA Counts per Year</h4>
-</div>
-<div class="row">
-    <button id="download-heatmap-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-heatmap-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top {{classification}} and their P/PA Counts per Year</h4>
+    </div>
     <div class="heatmap"></div>
+    <div>
+        <button id="download-heatmap-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-heatmap-raw" class="btn btn-light" role="button">
+
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
         var itemSize = 30,
             cellSize = itemSize - 1,
             margin = {top: 40, right: 20, bottom: 20, left: 230};
 
-        var heatMapWidth = 1200 - margin.right - margin.left,
+        var heatMapWidth = 900 - margin.right - margin.left,
             heatMapHeight = 500 - margin.top - margin.bottom;
         
         var minCount = "{{minCount}}";
@@ -625,302 +634,307 @@
 </div>
 
 <!-- View of Top Sectors and Industries -->
-<div class="row">
-    <h4>Top Sectors and Industries</h4>
-</div>
-<div class="row">
-    <button id="download-sunburst-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-sunburst-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top Sectors and Industries</h4>
+    </div>
     <div id="sunburst"></div>
-    <style>    
-        circle,
-        path {
-            cursor: pointer;
-        }
-        
-        circle {
-            fill: none;
-            pointer-events: all;
-        }
-        
-        #tooltip { background-color: white;
-                        padding: 3px 5px;
-                        border: 1px solid black;
-                        text-align: center;}
-    </style>
-    <script>    
-        var parser = new DOMParser;
-        var dom = parser.parseFromString("{{ sunBurstData }}", 'text/html');
-        var decodedString = dom.body.textContent;
-        var decodedString = decodedString.replace(/'/g, '"');
-        var sunBurstData = JSON.parse(decodedString);
-        var margin = {top: 600, right: 600, bottom: 600, left: 600},
-            radius = Math.min(margin.top, margin.right, margin.bottom, margin.left) - 250;
-        
-        function filter_min_arc_size_text(d, i) {return (d.dx*d.depth*radius/3)>14}; 
-        
-        var colors = ["#2b9ca5", "#E9EDDE", "#7cc9d2", "#e5f2f9", "#51D6E5", "#5BEEFF", "#44B2BF", "#2D777F", "#a6c8cf", "#e2e2e2", "#c1dae1", "#999", "#90b9c0", "#173B40"];
-        var colorFunction = d3.scale.linear().domain([1, colors.length])
-                .range(colors);     
-        
-        var hue = d3.scale.category10();
-        var luminance = d3.scale.sqrt()
-            .domain([0, 1e6])
-            .clamp(true)
-            .range([90, 20]);
-        
-        var sunburstSVG = d3.select("#sunburst").append("svg")
-            .attr("id", "sunburst-svg")
-            .attr("width", margin.left + margin.right)
-            .attr("height", margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-        
-        var partition = d3.layout.partition()
-            .sort(function(a, b) { return d3.ascending(a.name, b.name); })
-            .size([2 * Math.PI, radius]);
-        
-        var arc = d3.svg.arc()
-            .startAngle(function(d) { return d.x; })
-            .endAngle(function(d) { return d.x + d.dx - .01 / (d.depth + .5); })
-            .innerRadius(function(d) { return radius / 3 * d.depth; })
-            .outerRadius(function(d) { return radius / 3 * (d.depth + 1) - 1; });
-        
-        //Tooltip description
-        var tooltip = d3.select("body")
-            .append("div")
-            .attr("id", "tooltip")
-            .style("position", "absolute")
-            .style("z-index", "10")
-            .style("opacity", 0);
-        
-        function format_number(x) {
-            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-                
-        function format_description(d) {
-                return  '<b>' + d.name + '</b><br> (' + format_number(d.value) + ')';
-        }
-        
-        function computeTextRotation(d) {
-            var angle=(d.x +d.dx/2)*180/Math.PI - 90	
+    <div>
+        <button id="download-sunburst-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-sunburst-raw" class="btn btn-light" role="button">
+
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
+    <div>
+        <style>    
+            circle,
+            path {
+                cursor: pointer;
+            }
             
-            return angle;
-        }
-        
-        function mouseOverArc(d) {
-                        d3.select(this).attr("stroke","black")
-                        
-                    tooltip.html(format_description(d));
-                    return tooltip.transition()
-                    .duration(50)
-                    .style("opacity", 0.9);
-                }
-        
-        function mouseOutArc(){
-            d3.select(this).attr("stroke","")
-            return tooltip.style("opacity", 0);
-        }
-        
-        function mouseMoveArc (d) {
-                    return tooltip
-                    .style("top", (d3.event.pageY-10)+"px")
-                    .style("left", (d3.event.pageX+10)+"px");
-        }
-        
-        var root_ = null;
-        root = sunBurstData;            
-        partition
-            .value(function(d) { return d.size; })
-            .nodes(sunBurstData)
-            .forEach(function(d) {
-            d._children = d.children;
-            d.sum = d.value;
-            d.key = key(d);
-            d.fill = fill(d);
-            });
-    
-    
-        // Now redefine the value function to use the previously-computed sum.
-        partition
-            .children(function(d, depth) { return depth < 2 ? d._children : null; })
-            .value(function(d) { return d.sum; });
-    
-        var center = sunburstSVG.append("circle")
-            .attr("r", radius / 3)
-            .on("click", zoomOut);
-    
-        center.append("title")
-            .text("zoom out");
+            circle {
+                fill: none;
+                pointer-events: all;
+            }
             
-        var partitioned_data=partition.nodes(root).slice(1)
-    
-        var path = sunburstSVG.selectAll("path")
-            .data(partitioned_data)
-        .enter().append("path")
-            .attr("d", arc)
-            .style("fill", function(d) { return d.fill; })
-            .each(function(d) { this._current = updateArc(d); })
-            .on("click", zoomIn)
-            .on("mouseover", mouseOverArc)
-            .on("mousemove", mouseMoveArc)
-            .on("mouseout", mouseOutArc);
-        
+            #tooltip { background-color: white;
+                            padding: 3px 5px;
+                            border: 1px solid black;
+                            text-align: center;}
+        </style>
+        <script>    
+            var parser = new DOMParser;
+            var dom = parser.parseFromString("{{ sunBurstData }}", 'text/html');
+            var decodedString = dom.body.textContent;
+            var decodedString = decodedString.replace(/'/g, '"');
+            var sunBurstData = JSON.parse(decodedString);
+            var margin = {top: 600, right: 600, bottom: 600, left: 600},
+                radius = Math.min(margin.top, margin.right, margin.bottom, margin.left) - 250;
             
-        var texts = sunburstSVG.selectAll("text")
-            .data(partitioned_data)
-        .enter().append("text")
-            .filter(filter_min_arc_size_text)    	
-            .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
-            .attr("x", function(d) { return radius / 3 * d.depth; })	
-            .attr("dx", "6") // margin
-            .attr("dy", ".35em") // vertical-align	
-            .text(function(d,i) {return d.name})
-    
-        function zoomIn(p) {
-        if (p.depth > 1) p = p.parent;
-        if (!p.children) return;
-        zoom(p, p);
-        }
-    
-        function zoomOut(p) {
-        if (!p.parent) return;
-        zoom(p.parent, p);
-        }
-    
-        // Zoom to the specified new root.
-        function zoom(root, p) {
-        if (document.documentElement.__transition__) return;
-    
-        // Rescale outside angles to match the new layout.
-        var enterArc,
-            exitArc,
-            outsideAngle = d3.scale.linear().domain([0, 2 * Math.PI]);
-    
-        function insideArc(d) {
-            return p.key > d.key
-                ? {depth: d.depth - 1, x: 0, dx: 0} : p.key < d.key
-                ? {depth: d.depth - 1, x: 2 * Math.PI, dx: 0}
-                : {depth: 0, x: 0, dx: 2 * Math.PI};
-        }
-    
-        function outsideArc(d) {
-            return {depth: d.depth + 1, x: outsideAngle(d.x), dx: outsideAngle(d.x + d.dx) - outsideAngle(d.x)};
-        }
-    
-        center.datum(root);
-    
-        if (root === p) enterArc = outsideArc, exitArc = insideArc, outsideAngle.range([p.x, p.x + p.dx]);
+            function filter_min_arc_size_text(d, i) {return (d.dx*d.depth*radius/3)>14}; 
+            
+            var colors = ["#2b9ca5", "#E9EDDE", "#7cc9d2", "#e5f2f9", "#51D6E5", "#5BEEFF", "#44B2BF", "#2D777F", "#a6c8cf", "#e2e2e2", "#c1dae1", "#999", "#90b9c0", "#173B40"];  
+            var customColor = d3.scale.ordinal()
+            .domain(colors)
+            .range(colors);
+
+            var hue = d3.scale.category10();
+            var luminance = d3.scale.sqrt()
+                .domain([0, 1e6])
+                .clamp(true)
+                .range([90, 20]);
+            
+            var sunburstSVG = d3.select("#sunburst").append("svg")
+                .attr("id", "sunburst-svg")
+                .attr("width", margin.left + margin.right)
+                .attr("height", margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+            var partition = d3.layout.partition()
+                .sort(function(a, b) { return d3.ascending(a.name, b.name); })
+                .size([2 * Math.PI, radius]);
+            
+            var arc = d3.svg.arc()
+                .startAngle(function(d) { return d.x; })
+                .endAngle(function(d) { return d.x + d.dx - .01 / (d.depth + .5); })
+                .innerRadius(function(d) { return radius / 3 * d.depth; })
+                .outerRadius(function(d) { return radius / 3 * (d.depth + 1) - 1; });
+            
+            //Tooltip description
+            var tooltip = d3.select("body")
+                .append("div")
+                .attr("id", "tooltip")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                .style("opacity", 0);
+            
+            function format_number(x) {
+                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+                    
+            function format_description(d) {
+                    return  '<b>' + d.name + '</b><br> (' + format_number(d.value) + ')';
+            }
+            
+            function computeTextRotation(d) {
+                var angle=(d.x +d.dx/2)*180/Math.PI - 90	
+                
+                return angle;
+            }
+            
+            function mouseOverArc(d) {
+                            d3.select(this).attr("stroke","black")
+                            
+                        tooltip.html(format_description(d));
+                        return tooltip.transition()
+                        .duration(50)
+                        .style("opacity", 0.9);
+                    }
+            
+            function mouseOutArc(){
+                d3.select(this).attr("stroke","")
+                return tooltip.style("opacity", 0);
+            }
+            
+            function mouseMoveArc (d) {
+                        return tooltip
+                        .style("top", (d3.event.pageY-10)+"px")
+                        .style("left", (d3.event.pageX+10)+"px");
+            }
+            
+            var root_ = null;
+            root = sunBurstData;            
+            partition
+                .value(function(d) { return d.size; })
+                .nodes(sunBurstData)
+                .forEach(function(d) {
+                d._children = d.children;
+                d.sum = d.value;
+                d.key = key(d);
+                d.fill = fill(d);
+                });
         
-            var new_data=partition.nodes(root).slice(1)
-    
-        path = path.data(new_data, function(d) { return d.key; });
+        
+            // Now redefine the value function to use the previously-computed sum.
+            partition
+                .children(function(d, depth) { return depth < 2 ? d._children : null; })
+                .value(function(d) { return d.sum; });
+        
+            var center = sunburstSVG.append("circle")
+                .attr("r", radius / 3)
+                .on("click", zoomOut);
+        
+            center.append("title")
+                .text("zoom out");
                 
-        if (root !== p) enterArc = insideArc, exitArc = outsideArc, outsideAngle.range([p.x, p.x + p.dx]);
-    
-        d3.transition().duration(d3.event.altKey ? 7500 : 750).each(function() {
-            path.exit().transition()
-                .style("fill-opacity", function(d) { return d.depth === 1 + (root === p) ? 1 : 0; })
-                .attrTween("d", function(d) { return arcTween.call(this, exitArc(d)); })
-                .remove();
-                
-            path.enter().append("path")
-                .style("fill-opacity", function(d) { return d.depth === 2 - (root === p) ? 1 : 0; })
+            var partitioned_data=partition.nodes(root).slice(1)
+        
+            var path = sunburstSVG.selectAll("path")
+                .data(partitioned_data)
+            .enter().append("path")
+                .attr("d", arc)
                 .style("fill", function(d) { return d.fill; })
+                .each(function(d) { this._current = updateArc(d); })
                 .on("click", zoomIn)
-                    .on("mouseover", mouseOverArc)
+                .on("mouseover", mouseOverArc)
                 .on("mousemove", mouseMoveArc)
-                .on("mouseout", mouseOutArc)
-                .each(function(d) { this._current = enterArc(d); });
-    
+                .on("mouseout", mouseOutArc);
             
-            path.transition()
-                .style("fill-opacity", 1)
-                .attrTween("d", function(d) { return arcTween.call(this, updateArc(d)); });
-        });
+                
+            var texts = sunburstSVG.selectAll("text")
+                .data(partitioned_data)
+            .enter().append("text")
+                .filter(filter_min_arc_size_text)    	
+                .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
+                .attr("x", function(d) { return radius / 3 * d.depth; })	
+                .attr("dx", "6") // margin
+                .attr("dy", ".35em") // vertical-align	
+                .text(function(d,i) {return d.name})
+        
+            function zoomIn(p) {
+            if (p.depth > 1) p = p.parent;
+            if (!p.children) return;
+            zoom(p, p);
+            }
+        
+            function zoomOut(p) {
+            if (!p.parent) return;
+            zoom(p.parent, p);
+            }
+        
+            // Zoom to the specified new root.
+            function zoom(root, p) {
+            if (document.documentElement.__transition__) return;
+        
+            // Rescale outside angles to match the new layout.
+            var enterArc,
+                exitArc,
+                outsideAngle = d3.scale.linear().domain([0, 2 * Math.PI]);
+        
+            function insideArc(d) {
+                return p.key > d.key
+                    ? {depth: d.depth - 1, x: 0, dx: 0} : p.key < d.key
+                    ? {depth: d.depth - 1, x: 2 * Math.PI, dx: 0}
+                    : {depth: 0, x: 0, dx: 2 * Math.PI};
+            }
+        
+            function outsideArc(d) {
+                return {depth: d.depth + 1, x: outsideAngle(d.x), dx: outsideAngle(d.x + d.dx) - outsideAngle(d.x)};
+            }
+        
+            center.datum(root);
+        
+            if (root === p) enterArc = outsideArc, exitArc = insideArc, outsideAngle.range([p.x, p.x + p.dx]);
+            
+                var new_data=partition.nodes(root).slice(1)
+        
+            path = path.data(new_data, function(d) { return d.key; });
+                    
+            if (root !== p) enterArc = insideArc, exitArc = outsideArc, outsideAngle.range([p.x, p.x + p.dx]);
+        
+            d3.transition().duration(d3.event.altKey ? 7500 : 750).each(function() {
+                path.exit().transition()
+                    .style("fill-opacity", function(d) { return d.depth === 1 + (root === p) ? 1 : 0; })
+                    .attrTween("d", function(d) { return arcTween.call(this, exitArc(d)); })
+                    .remove();
+                    
+                path.enter().append("path")
+                    .style("fill-opacity", function(d) { return d.depth === 2 - (root === p) ? 1 : 0; })
+                    .style("fill", function(d) { return d.fill; })
+                    .on("click", zoomIn)
+                        .on("mouseover", mouseOverArc)
+                    .on("mousemove", mouseMoveArc)
+                    .on("mouseout", mouseOutArc)
+                    .each(function(d) { this._current = enterArc(d); });
+        
+                
+                path.transition()
+                    .style("fill-opacity", 1)
+                    .attrTween("d", function(d) { return arcTween.call(this, updateArc(d)); });
+            });
 
-        texts = texts.data(new_data, function(d) { return d.key; })
-        texts.exit()
-            .remove()    
-        texts.enter()
-            .append("text")
-                
-        texts.style("opacity", 0)
-            .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
-            .attr("x", function(d) { return radius / 3 * d.depth; })	
-            .attr("dx", "6") // margin
-            .attr("dy", ".35em") // vertical-align
-            .filter(filter_min_arc_size_text)    	
-            .text(function(d,i) {return d.name})
-            .transition().delay(750).style("opacity", 1)
-                
-                
-        }
-        function key(d) {
-            var k = [], p = d;
-            while (p.depth) k.push(p.name), p = p.parent;
-            return k.reverse().join(".");
-        }
-        
-        function fill(d) {
-            var p = d;
-            while (p.depth > 1) p = p.parent;
-            var c = d3.lab(hue(p.name));
-            c.l = luminance(d.sum);
-            c.b = c.b - 20;
-            c.a = c.a - 70;
-            c.l = c.l - 20;
-            return c;
-        }
-        
-        function arcTween(b) {
-            var i = d3.interpolate(this._current, b);
-            this._current = i(0);
-            return function(t) {
-            return arc(i(t));
-            };
-        }
-        
-        function updateArc(d) {
-            return {depth: d.depth, x: d.x, dx: d.dx};
-        }
-        d3.select(self.frameElement).style("height", margin.top + margin.bottom + "px");
+            texts = texts.data(new_data, function(d) { return d.key; })
+            texts.exit()
+                .remove()    
+            texts.enter()
+                .append("text")
+                    
+            texts.style("opacity", 0)
+                .attr("transform", function(d) { return "rotate(" + computeTextRotation(d) + ")"; })
+                .attr("x", function(d) { return radius / 3 * d.depth; })	
+                .attr("dx", "6") // margin
+                .attr("dy", ".35em") // vertical-align
+                .filter(filter_min_arc_size_text)    	
+                .text(function(d,i) {return d.name})
+                .transition().delay(750).style("opacity", 1)
+                    
+                    
+            }
+            function key(d) {
+                var k = [], p = d;
+                while (p.depth) k.push(p.name), p = p.parent;
+                return k.reverse().join(".");
+            }
+            
+            function fill(d) {
+                var p = d;
+                while (p.depth > 1) p = p.parent;
+                var c = d3.lab(hue(p.name));
+                c.l = luminance(d.sum);
+                c.b = c.b - 20;
+                c.a = c.a - 70;
+                c.l = c.l - 20;
+                return c;
+            }
+            
+            function arcTween(b) {
+                var i = d3.interpolate(this._current, b);
+                this._current = i(0);
+                return function(t) {
+                return arc(i(t));
+                };
+            }
+            
+            function updateArc(d) {
+                return {depth: d.depth, x: d.x, dx: d.dx};
+            }
+            d3.select(self.frameElement).style("height", margin.top + margin.bottom + "px");
 
-        d3v4.select("#download-sunburst-svg")
-        .on('click', function(){
-            saveSvgAsPng(document.getElementById("sunburst-svg"), "Top Assignee Sectors and Industries", {scale: 7});
-        })
-        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(decodedString));
-        var dlAnchorElem = document.getElementById('download-sunburst-raw');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", "Top Assignee Sectors and Industries.json");
-    </script> 
+            d3v4.select("#download-sunburst-svg")
+            .on('click', function(){
+                saveSvgAsPng(document.getElementById("sunburst-svg"), "Top Assignee Sectors and Industries", {scale: 7});
+            })
+            var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(decodedString));
+            var dlAnchorElem = document.getElementById('download-sunburst-raw');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "Top Assignee Sectors and Industries.json");
+        </script> 
+    </div>
 </div>
 
 <!-- View of Top Assignees -->
-<div class="row">
-    <h4>Top Assignees</h4>
-</div>
-<div class="row">
-    <button id="download-ca-bar-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-ca-bar-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
-    <svg width="768" id="ca-bar-svg"></svg>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top Assignees</h4>
+    </div>
+    <div>
+        <svg width="768" id="ca-bar-svg"></svg>
+    </div>
+    <div>
+        <button id="download-ca-bar-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-ca-bar-raw" class="btn btn-light" role="button">
+
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
         var parser = new DOMParser;
         var dom = parser.parseFromString("{{ assigneeData }}", 'text/html');
@@ -1027,27 +1041,27 @@
 </div>
 
 <!-- View of Top Assignees and their P/PA Counts per Year -->
-<div class="row">
-    <h4>Top Assignees and their P/PA Counts per Year</h4>
-</div>
-<div class="row">
-    <button id="download-ca-heatmap-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-ca-heatmap-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row"> 
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top Assignees and their P/PA Counts per Year</h4>
+    </div>
     <div class="CAHeatmap"></div>
+    <div>
+        <button id="download-ca-heatmap-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-ca-heatmap-raw" class="btn btn-light" role="button">
+
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
         var itemSize = 30,
             cellSize = itemSize - 1,
             margin = {top: 40, right: 20, bottom: 20, left: 230};
 
-        var heatMapWidth1 = 1200 - margin.right - margin.left,
+        var heatMapWidth1 = 900 - margin.right - margin.left,
             heatMapHeight1 = 500 - margin.top - margin.bottom;
         
         var minCount2 = "{{minCount2}}";
@@ -1151,118 +1165,119 @@
 </div>
 
 <!-- View of Top Assignees and their Patenting Year -->
-<div class="row">
-    <h4>Patenting Trend of Top Assignees </h4>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Patenting Trend of Top Assignees </h4>
+    </div>
+    <div id="smallMultipleDiv">
+        <style>
+            .line {
+            fill: none;
+            stroke:#2D777F;
+            stroke-width: 2px;
+            }
+
+            .area {
+            fill:#e5f2f9;
+            }
+            .area:hover {
+                fill: #5BEEFF ;
+            }
+        </style>
+        <script>
+            var parser = new DOMParser;
+            var dom = parser.parseFromString("{{ smallMultipleData }}", 'text/html');
+            var decodedString = dom.body.textContent;
+            var smallMultipleData = JSON.parse(decodedString);
+            smallMultipleData = Object.values(smallMultipleData);
+            var margin = {top: 8, right: 10, bottom: 2, left: 10},
+                width = 300 - margin.left - margin.right,
+                height = 150 - margin.top - margin.bottom;
+            console.log(smallMultipleData);
+
+            var x = d3.time.scale()
+                .range([0, width]);
+
+            var y = d3.scale.linear()
+                .range([height, 0]);
+
+            var area = d3.svg.area()
+                .x(function(d) { return x(d.Years); })
+                .y0(height)
+                .y1(function(d) { return y(+d.nPPA); });
+
+            var line = d3.svg.line()
+                .x(function(d) { return x(d.Years); })
+                .y(function(d) { return y(+d.nPPA); });
+
+            var assignees = d3.nest()
+                .key(function(d) { return d.CurrentAssignees; })
+                .entries(smallMultipleData);
+
+            // Compute the maximum price per assignees, needed for the y-domain.
+            assignees.forEach(function(s) {
+                s.maxPrice = d3.max(s.values, function(d) { return +d.nPPA; });
+            });
+
+            // Compute the minimum and maximum date across assignees.
+            // We assume values are sorted by date.
+            x.domain([
+                d3.min(assignees, function(s) { return s.values[0].Years; }),
+                d3.max(assignees, function(s) { return s.values[s.values.length - 1].Years; })
+            ]);
+
+            // Add an SVG element for each assignees, with the desired dimensions and margin.
+            var svg = d3.select("#smallMultipleDiv").selectAll("svg")
+                .data(assignees)
+                .enter().append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            // Add the area path elements. Note: the y-domain is set per element.
+            svg.append("path")
+                .attr("class", "area")
+                .attr("d", function(d) { y.domain([0, d.maxPrice]); return area(d.values); });
+
+            // Add the line path elements. Note: the y-domain is set per element.
+            svg.append("path")
+                .attr("class", "line")
+                .attr("d", function(d) { y.domain([0, d.maxPrice]); return line(d.values); });
+
+            // Add a small label for the assignees name.
+            svg.append("text")
+                .attr("x", width - 6)
+                .attr("y", height - 6)
+                .style("text-anchor", "end")
+                .text(function(d) { return d.key; });
+
+        </script>
+    </div>
 </div>
-<div class="row" id="smallMultipleDiv">
-    <style>
-        .line {
-        fill: none;
-        stroke:#2D777F;
-        stroke-width: 2px;
-        }
-
-        .area {
-        fill:#e5f2f9;
-        }
-        .area:hover {
-            fill: #5BEEFF ;
-        }
-    </style>
-    <script>
-        var parser = new DOMParser;
-        var dom = parser.parseFromString("{{ smallMultipleData }}", 'text/html');
-        var decodedString = dom.body.textContent;
-        var smallMultipleData = JSON.parse(decodedString);
-        smallMultipleData = Object.values(smallMultipleData);
-        var margin = {top: 8, right: 10, bottom: 2, left: 10},
-            width = 300 - margin.left - margin.right,
-            height = 150 - margin.top - margin.bottom;
-        console.log(smallMultipleData);
-
-        var x = d3.time.scale()
-            .range([0, width]);
-
-        var y = d3.scale.linear()
-            .range([height, 0]);
-
-        var area = d3.svg.area()
-            .x(function(d) { return x(d.Years); })
-            .y0(height)
-            .y1(function(d) { return y(+d.nPPA); });
-
-        var line = d3.svg.line()
-            .x(function(d) { return x(d.Years); })
-            .y(function(d) { return y(+d.nPPA); });
-
-        var assignees = d3.nest()
-            .key(function(d) { return d.CurrentAssignees; })
-            .entries(smallMultipleData);
-
-        // Compute the maximum price per assignees, needed for the y-domain.
-        assignees.forEach(function(s) {
-            s.maxPrice = d3.max(s.values, function(d) { return +d.nPPA; });
-        });
-
-        // Compute the minimum and maximum date across assignees.
-        // We assume values are sorted by date.
-        x.domain([
-            d3.min(assignees, function(s) { return s.values[0].Years; }),
-            d3.max(assignees, function(s) { return s.values[s.values.length - 1].Years; })
-        ]);
-
-        // Add an SVG element for each assignees, with the desired dimensions and margin.
-        var svg = d3.select("#smallMultipleDiv").selectAll("svg")
-            .data(assignees)
-            .enter().append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-        // Add the area path elements. Note: the y-domain is set per element.
-        svg.append("path")
-            .attr("class", "area")
-            .attr("d", function(d) { y.domain([0, d.maxPrice]); return area(d.values); });
-
-        // Add the line path elements. Note: the y-domain is set per element.
-        svg.append("path")
-            .attr("class", "line")
-            .attr("d", function(d) { y.domain([0, d.maxPrice]); return line(d.values); });
-
-        // Add a small label for the assignees name.
-        svg.append("text")
-            .attr("x", width - 6)
-            .attr("y", height - 6)
-            .style("text-anchor", "end")
-            .text(function(d) { return d.key; });
-
-    </script>
-</div>
-
 
 <!-- View of Top Assignees vs Top Categories -->
-<div class="row">
-    <h4>Top Assignees vs Top {{classification}}</h4>
-</div>
-<div class="row">
-    <button id="download-ca-categories-heatmap-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-ca-categories-heatmap-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top Assignees vs Top {{classification}}</h4>
+    </div>
     <div class="CACategoriesHeatmap"></div>
+    <div>
+        <button id="download-ca-categories-heatmap-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-ca-categories-heatmap-raw" class="btn btn-light" role="button">
+
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
         var itemSize = 30,
             cellSize = itemSize - 1,
             margin = {top: 40, right: 20, bottom: 20, left: 230};
 
-        var heatMapWidth2 = 1200 - margin.right - margin.left,
+        var heatMapWidth2 = 900 - margin.right - margin.left,
             heatMapHeight2 = 640 - margin.top - margin.bottom;
         
         var minCount3 = "{{minCount3}}";

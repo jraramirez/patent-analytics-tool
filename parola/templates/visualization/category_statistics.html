@@ -1,116 +1,120 @@
 {% load app_filters %}
+<div class="col shadow p-3 mb-5 bg-white rounded">
 
-<div class="row">
-    <h3>Category Statistics</h3>
-</div>
+    <div>
+        <h3>Category Statistics</h3>
+    </div>
 
-<div class="row">
-    <table class="form-text">
-        <tr>
-            <td class="label"><label class="control-label">Data set: </label></td>
-            <td>
-                <select class="form-control"onChange="window.location.href=this.value">
-                    {% for dataSet in dataSetNames %}
-                    {% if dataSet == 'index' %}
-                    <option selected="selected" disabled value="/visualization/category_statistics/index/{{classification}}/index">Choose one</option>
-                    {% elif data_set == dataSet %}
-                    <option selected="selected" value="/visualization/category_statistics/{{data_set}}/{{classification}}/index">{{data_set}}</option>
-                    {% else %}
-                    <option value="/visualization/category_statistics/{{dataSet}}/{{classification}}/index">{{dataSet}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label">Classification: </label></td>
-            <td>
-                <select class="form-control"onChange="window.location.href=this.value">
-                    {% for classificationName in classificationNames %}
-                    {% if classificationName == 'index'%}
-                    <option selected="selected" disabled value="/">Choose one</option>
-                    {% elif classification == classificationName %}
-                    <option selected="selected" value="/visualization/category_statistics/{{data_set}}/{{classification}}/{{selectedCategory}}">{{classification}}</option>
-                    {% else %}
-                    <option value="/visualization/category_statistics/{{data_set}}/{{classificationName}}/{{selectedCategory}}">{{classificationName}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        {% if hasDataSet %}
-        <tr>
-            <td class="label"><label class="control-label">{{classification}}: </label></td>
-            <td>
-                <select class="form-control"onChange="window.location.href=this.value">
-                    {% for c in categoryList %}
-                    {% if c == 'index' %}
-                    <option selected="selected" disabled value="/visualization/category_statistics/index/index">Choose one</option>
-                    {% elif c == category %}
-                    <option selected="selected" value="/visualization/category_statistics/{{data_set}}/{{classification}}/{{category | slash_to_underscore}}">{{category | title | truncatechars:40 }}</option>
-                    {% else %}
-                    <option value="/visualization/category_statistics/{{data_set}}/{{classification}}/{{c | slash_to_underscore}}">{{c | title | truncatechars:40 }}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        {% endif %}
-        {% if valid %}
-        <form action="" enctype="multipart/form-data" method="post">
-        <tr>
-            <td class="label"><label class="control-label">Limit Number of Years: </label></td>
-            <td>
-                <input class="form-control" type="number" value="{{previousNYears}}" name="target-n-years">
-            </td>
-        </tr>    
-        <tr>
-            <td class="label"><label class="control-label"></label></td>
-            <td>
-                <input class="btn btn-info" type="submit" value="Update" name="update">
-            </td>
-        </tr>
-        </form>
-        {% endif %}
-    </table>
+    <div>
+        <table class="form-text">
+            <tr>
+                <td class="label"><label class="control-label">Data set: </label></td>
+                <td>
+                    <select class="form-control"onChange="window.location.href=this.value">
+                        {% for dataSet in dataSetNames %}
+                        {% if dataSet == 'index' %}
+                        <option selected="selected" disabled value="/visualization/category_statistics/index/{{classification}}/index">Choose one</option>
+                        {% elif data_set == dataSet %}
+                        <option selected="selected" value="/visualization/category_statistics/{{data_set}}/{{classification}}/index">{{data_set}}</option>
+                        {% else %}
+                        <option value="/visualization/category_statistics/{{dataSet}}/{{classification}}/index">{{dataSet}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label">Classification: </label></td>
+                <td>
+                    <select class="form-control"onChange="window.location.href=this.value">
+                        {% for classificationName in classificationNames %}
+                        {% if classificationName == 'index'%}
+                        <option selected="selected" disabled value="/">Choose one</option>
+                        {% elif classification == classificationName %}
+                        <option selected="selected" value="/visualization/category_statistics/{{data_set}}/{{classification}}/{{selectedCategory}}">{{classification}}</option>
+                        {% else %}
+                        <option value="/visualization/category_statistics/{{data_set}}/{{classificationName}}/{{selectedCategory}}">{{classificationName}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            {% if hasDataSet %}
+            <tr>
+                <td class="label"><label class="control-label">{{classification}}: </label></td>
+                <td>
+                    <select class="form-control"onChange="window.location.href=this.value">
+                        {% for c in categoryList %}
+                        {% if c == 'index' %}
+                        <option selected="selected" disabled value="/visualization/category_statistics/index/index">Choose one</option>
+                        {% elif c == category %}
+                        <option selected="selected" value="/visualization/category_statistics/{{data_set}}/{{classification}}/{{category | slash_to_underscore}}">{{category | title | truncatechars:40 }}</option>
+                        {% else %}
+                        <option value="/visualization/category_statistics/{{data_set}}/{{classification}}/{{c | slash_to_underscore}}">{{c | title | truncatechars:40 }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            {% endif %}
+            {% if valid %}
+            <form action="" enctype="multipart/form-data" method="post">
+            <tr>
+                <td class="label"><label class="control-label">Limit Number of Years: </label></td>
+                <td>
+                    <input class="form-control" type="number" value="{{previousNYears}}" name="target-n-years">
+                </td>
+            </tr>    
+            <tr>
+                <td class="label"><label class="control-label"></label></td>
+                <td>
+                    <input class="btn btn-info" type="submit" value="Update" name="update">
+                </td>
+            </tr>
+            </form>
+            {% endif %}
+        </table>
+    </div>
 </div>
 
 {% if valid %}
-<div class="row">
-    <h4>Statistics for 
-        {% if classification == 'cpc' %}
-            {{ selectedCategory | upper | truncatechars:40}} - {{selectedCPCDescription}}
-        {% else %}
-            {{ selectedCategory | title | truncatechars:40}}
-        {% endif %}
-    </h4>
-</div>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Statistics for 
+            {% if classification == 'cpc' %}
+                {{ selectedCategory | upper | truncatechars:40}} - {{selectedCPCDescription}}
+            {% else %}
+                {{ selectedCategory | title | truncatechars:40}}
+            {% endif %}
+        </h4>
+    </div>
 
-{% if nPPA %}
-<div class="row">
-    <h4>Number of P/PA</h4>
-</div>
-<div class="row">
-    <h1>{{nPPA}}</h1>
+    {% if nPPA %}
+    <div>
+        <h4>Number of P/PA</h4>
+    </div>
+    <div>
+        <h1>{{nPPA}}</h1>
+    </div>
 </div>
 {% endif %}
 
 <!-- Bar Graph -->
-<div class="row">
-    <h4>Top Assignees</h4>
-</div>
-<div class="row">
-    <button id="download-bar-svg-1" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-bar-raw-1" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
-    <svg width="768" height="360" id="bar-svg-1"></svg>  
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top Assignees</h4>
+    </div>
+    <div>
+        <svg width="768" height="360" id="bar-svg-1"></svg>  
+    </div>
+    <div>
+        <button id="download-bar-svg-1" type="button" class="btn btn-light" aria-label="Download Chart">
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-bar-raw-1" class="btn btn-light" role="button">
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
         var parser = new DOMParser;
         var dom = parser.parseFromString("{{ assigneeData }}", 'text/html');
@@ -222,21 +226,21 @@
 </div>
 
 <!-- Number of P/PA per Year< -->
-<div class="row">
-    <h4>Number of P/PA per Year</h4>
-</div>
-<div class="row">
-    <button id="download-line-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-line-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
-    <svg width="768" height="640" id="line-svg" ></svg>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Number of P/PA per Year</h4>
+    </div>
+    <div>
+        <svg width="768" height="640" id="line-svg" ></svg>
+    </div>
+    <div>
+        <button id="download-line-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-line-raw" class="btn btn-light" role="button">
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
     
     var svg = d3v4.select("#line-svg"),
@@ -344,12 +348,12 @@
     </script>
 </div>
 
-<!-- Top Assignees in Max< -->
+<!-- Top Assignees in Max -->
 {% if false%}
-<div class="row">
+<div>
     <h4>Top Assignees in {{ maxYear }}</h4>
 </div>
-<div class="row">
+<div>
     <svg width="640" height="300" id="bar-svg"></svg>
     
     <script>

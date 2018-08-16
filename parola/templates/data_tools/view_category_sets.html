@@ -1,15 +1,18 @@
-<div class="row">
-    <h3>Category Sets</h3>
-</div>
 
-{% for categorySetName in categorySetNames %}
-<div class="row">
-    <a href="/data_tools/view_category_sets/{{categorySetName}}"> {{categorySetName}} </a>
-</div>
-{% endfor %}
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h3>Category Sets</h3>
+    </div>
 
-{% if keywordsDFHTML %}
-<div class="row">
-    {{keywordsDFHTML | safe}}
+    {% for categorySetName in categorySetNames %}
+    <div>
+        <a href="/data_tools/view_category_sets/{{categorySetName}}"> {{categorySetName}} </a>
+    </div>
+    {% endfor %}
+
+    {% if keywordsDFHTML %}
+    <div>
+        {{keywordsDFHTML | safe}}
+    </div>
+    {% endif %}
 </div>
-{% endif %}

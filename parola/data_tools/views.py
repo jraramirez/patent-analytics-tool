@@ -478,8 +478,6 @@ def new_training_setup(request):
     # Default View
     else:
         form = UploadFileForm()
-        sampleFileDF = pd.read_excel('../out/Sample File for Training Set.xlsx', 'Sheet1')
-        sampleFileHTML = sampleFileDF.head().to_html()
 
     templateHTML = 'data_tools/new_training_setup.html'
     mainHTML = render_to_string(

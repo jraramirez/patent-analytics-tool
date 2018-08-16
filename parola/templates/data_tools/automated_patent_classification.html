@@ -1,312 +1,340 @@
-<div class="row">
-    <h3>Automated Patent Classification</h3>
-</div>
-{% if hasDataSet or valid %}
-<div class="row">
-    <a href="/data_tools/automated_patent_classification/index/index"> << Start over </a>
-</div>
-{% endif %}
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h3>Automated Patent Classification</h3>
+    </div>
+    {% if hasDataSet or valid %}
+    <div>
+        <a href="/data_tools/automated_patent_classification/index/index"> << Start over </a>
+    </div>
+    {% endif %}
 
-{% if not hasDataSet %}
-<div class="row">
-    <h4>Step 1. Select a data set and a training set</h4>
-</div>
-<div class="row">
-    <form action="" enctype="multipart/form-data" method="post">
-    {% csrf_token %}
-    <table class="form-text">
-        <tr>
-            <td class="label"><label class="control-label">Data Set: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for dataSet in dataSetNames %}
-                    {% if dataSet == 'index' %}
-                    <option selected="selected" disabled>Choose one</option>
-                    {% elif data_set == dataSet %}
-                    <option selected="selected" value="/data_tools/automated_patent_classification/{{dataSet}}/{{training_set}}">{{data_set}}</option>
-                    {% else %}
-                    <option value="/data_tools/automated_patent_classification/{{dataSet}}/{{training_set}}">{{dataSet}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label">Training Set: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for trainingSet in trainingDataSetNames %}
-                    {% if trainingSet == 'index' %}
-                    <option selected="selected" disabled>Choose one</option>
-                    {% elif training_set == trainingSet %}
-                    <option selected="selected" value="/data_tools/automated_patent_classification/{{data_set}}/{{trainingSet}}">{{training_set}}</option>
-                    {% else %}
-                    <option value="/data_tools/automated_patent_classification/{{data_set}}/{{trainingSet}}">{{trainingSet}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-    </table>
-    </form>
-</div>
-{% endif %}
+    {% if not hasDataSet %}
+    <div>
+        <h4>Step 1. Select a data set and a training set</h4>
+    </div>
+    <div>
+        <form action="" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        <table class="form-text">
+            <tr>
+                <td class="label"><label class="control-label">Data Set: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for dataSet in dataSetNames %}
+                        {% if dataSet == 'index' %}
+                        <option selected="selected" disabled>Choose one</option>
+                        {% elif data_set == dataSet %}
+                        <option selected="selected" value="/data_tools/automated_patent_classification/{{dataSet}}/{{training_set}}">{{data_set}}</option>
+                        {% else %}
+                        <option value="/data_tools/automated_patent_classification/{{dataSet}}/{{training_set}}">{{dataSet}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label">Training Set: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for trainingSet in trainingDataSetNames %}
+                        {% if trainingSet == 'index' %}
+                        <option selected="selected" disabled>Choose one</option>
+                        {% elif training_set == trainingSet %}
+                        <option selected="selected" value="/data_tools/automated_patent_classification/{{data_set}}/{{trainingSet}}">{{training_set}}</option>
+                        {% else %}
+                        <option value="/data_tools/automated_patent_classification/{{data_set}}/{{trainingSet}}">{{trainingSet}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+        </table>
+        </form>
+    </div>
+    {% endif %}
 
-{% if hasDataSet and not valid %}
-<div class="row">
-    <h4>Step 2. Setup the classification model</h4>
+    {% if hasDataSet and not valid %}
+    <div>
+        <h4>Step 2. Setup the classification model</h4>
+    </div>
+    <div>
+        <form action="" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        <table class="form-text">
+            <tr>
+                <td class="label"><label class="control-label">Features: </label></td>
+                <td><input type="checkbox" name="features" value="titles" checked="checked">Titles</td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label"></label></td>
+                <td><input type="checkbox" name="features" value="abstracts" checked="checked">Abstracts</td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label"></label></td>
+                <td><input type="checkbox" name="features" value="independentclaims" checked="checked">Independent Claims</td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label">Method: </label></td>
+                <td>
+                    <input type="radio" name="method" value="gradientboosting" checked="checked"> Gradient Boosting <br>
+                    <input type="radio" name="method" value="mlpclassifier"> Multi-layer Perceptron <br>
+                    <input type="radio" name="method" value="randomforest"> Random Forest <br>
+                </td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label">Test Size: </label></td>
+                <td>
+                    <input class="form-control" class="target-test-size" type="number" value="0.2" step="0.01" name="target-test-size">
+                </td>
+            </tr>             
+            <tr>
+                <td class="label"><label class="control-label">Number of Estimators: </label></td>
+                <td>
+                    <input class="form-control" type="number" value="500"name="target-n-estimator">
+                </td>
+            </tr>             
+            <tr>
+                <td class="label"><label class="control-label">Learning Rate: </label></td>
+                <td>
+                    <input class="form-control" type="number" value="0.05" step="0.01" name="target-learning-rate">
+                </td>
+            </tr>              
+            <tr>
+                <td class="label"><label class="control-label">N-Gram Range: </label></td>
+                <td>
+                    <input class="form-control" type="number" value="1" name="target-n-gram-1">
+                </td>
+                <td>
+                    <input class="form-control" type="number" value="2" name="target-n-gram-2">
+                </td>
+            </tr>                
+            <tr>
+                <td class="label"><label class="control-label"></label></td>
+                <td>
+                    <input class="btn btn-info" type="submit" value="Process" name="process">
+                </td>
+            </tr>
+        </table>
+        </form>
+    </div>
+    {% endif %}
 </div>
-<div class="row">
-    <form action="" enctype="multipart/form-data" method="post">
-    {% csrf_token %}
-    <table class="form-text">
-        <tr>
-            <td class="label"><label class="control-label">Features: </label></td>
-            <td><input type="checkbox" name="features" value="titles" checked="checked">Titles</td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label"></label></td>
-            <td><input type="checkbox" name="features" value="abstracts" checked="checked">Abstracts</td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label"></label></td>
-            <td><input type="checkbox" name="features" value="independentclaims" checked="checked">Independent Claims</td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label">Method: </label></td>
-            <td>
-                <input type="radio" name="method" value="gradientboosting" checked="checked"> Gradient Boosting <br>
-                <input type="radio" name="method" value="mlpclassifier"> Multi-layer Perceptron <br>
-                <input type="radio" name="method" value="randomforest"> Random Forest <br>
-            </td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label">Test Size: </label></td>
-            <td>
-                <input class="form-control" class="target-test-size" type="number" value="0.2" step="0.01" name="target-test-size">
-            </td>
-        </tr>             
-        <tr>
-            <td class="label"><label class="control-label">Number of Estimators: </label></td>
-            <td>
-                <input class="form-control" type="number" value="500"name="target-n-estimator">
-            </td>
-        </tr>             
-        <tr>
-            <td class="label"><label class="control-label">Learning Rate: </label></td>
-            <td>
-                <input class="form-control" type="number" value="0.05" step="0.01" name="target-learning-rate">
-            </td>
-        </tr>              
-        <tr>
-            <td class="label"><label class="control-label">N-Gram Range: </label></td>
-            <td>
-                <input class="form-control" type="number" value="1" name="target-n-gram-1">
-            </td>
-            <td>
-                <input class="form-control" type="number" value="2" name="target-n-gram-2">
-            </td>
-        </tr>                
-        <tr>
-            <td class="label"><label class="control-label"></label></td>
-            <td>
-                <input class="btn btn-info" type="submit" value="Process" name="process">
-            </td>
-        </tr>
-    </table>
-    </form>
-</div>
-{% endif %}
 
 
 {% if valid %}
-<div class="row">
-    <h4>Prediction Counts</h4>
-</div>
-<div class="row">
-    <svg width="960" height="400" id="bar-svg"></svg>
-    <script>
-        var svg = d3v4.select("#bar-svg"),
-            margin = {top: 20, right: 20, bottom: 30, left: 240},
-            width = +svg.attr("width") - margin.left - margin.right,
-            height = +svg.attr("height") - margin.top - margin.bottom,
-            barG = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Prediction Counts</h4>
+    </div>
+    <div>
+        <svg width="960" height="400" id="bar-svg"></svg>
+        <script>
+            var svg = d3v4.select("#bar-svg"),
+                margin = {top: 20, right: 20, bottom: 30, left: 240},
+                width = +svg.attr("width") - margin.left - margin.right,
+                height = +svg.attr("height") - margin.top - margin.bottom,
+                barG = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var barY = d3v4.scaleBand()	
-            .rangeRound([0, height])
-            .paddingInner(0.05)
-            .align(0.1);
+            var barY = d3v4.scaleBand()	
+                .rangeRound([0, height])
+                .paddingInner(0.05)
+                .align(0.1);
 
-        var barX = d3v4.scaleLinear()
-            .rangeRound([0, width]);
-            
-        var barZ = d3v4.scaleOrdinal(d3v4.schemeCategory10);
-        var colors = ["#5BEEFF", "#173B40", "#51D6E5", "#44B2BF", "#2D777F", "#e5f2f9", "#E9EDDE", "#e2e2e2"]
+            var barX = d3v4.scaleLinear()
+                .rangeRound([0, width]);
+                
+            var barZ = d3v4.scaleOrdinal(d3v4.schemeCategory10);
+            var colors = ["#5BEEFF", "#173B40", "#51D6E5", "#44B2BF", "#2D777F", "#e5f2f9", "#E9EDDE", "#e2e2e2"]
 
-        d3v4.tsv("{% url 'data_tools:input_classification_bar_graph' %}", function(d, i, columns) {
-        for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
-        d.total = t;
-        return d;
-        }, function(error, data) {
-            
-        if (error) throw error;
+            d3v4.tsv("{% url 'data_tools:input_classification_bar_graph' %}", function(d, i, columns) {
+            for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+            d.total = t;
+            return d;
+            }, function(error, data) {
+                
+            if (error) throw error;
 
-        var keys = data.columns.slice(1);
+            var keys = data.columns.slice(1);
 
-        data.sort(function(a, b) { return b.total - a.total; });
-        barY.domain(data.map(function(d) { return d.classification; }));
-        barX.domain([0, d3v4.max(data, function(d) { return d.total; })]).nice();
-        barZ.domain(keys);
+            data.sort(function(a, b) { return b.total - a.total; });
+            barY.domain(data.map(function(d) { return d.classification; }));
+            barX.domain([0, d3v4.max(data, function(d) { return d.total; })]).nice();
+            barZ.domain(keys);
 
-        barG.append("g")
-            .selectAll("g")
-            .data(d3v4.stack().keys(keys)(data))
-            .enter().append("g")
-            .attr("fill", "#2D777F")
-            .attr("transform", "translate(0,"+margin.top+")")
-            .selectAll("rect")
-            .data(function(d) { return d; })
-            .enter().append("rect")
-            .attr("class", "bar")
-            .attr("y", function(d) { return barY(d.data.classification); })
-            .attr("x", function(d) { return barX(d[0]); })
-            .attr("width", function(d) { return barX(d[1]) - barX(d[0]); })
-            .attr("height", barY.bandwidth());
+            barG.append("g")
+                .selectAll("g")
+                .data(d3v4.stack().keys(keys)(data))
+                .enter().append("g")
+                .attr("fill", "#2D777F")
+                .attr("transform", "translate(0,"+margin.top+")")
+                .selectAll("rect")
+                .data(function(d) { return d; })
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("y", function(d) { return barY(d.data.classification); })
+                .attr("x", function(d) { return barX(d[0]); })
+                .attr("width", function(d) { return barX(d[1]) - barX(d[0]); })
+                .attr("height", barY.bandwidth());
 
-        barG.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(0,"+margin.top+")")
-            .call(d3v4.axisLeft(barY));
+            barG.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0,"+margin.top+")")
+                .call(d3v4.axisLeft(barY));
 
-        barG.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(0,0)")
-            .call(d3v4.axisBottom(barX).ticks(null).tickSize(0))
-            .append("text")
-            .attr("y", 0)
-            .attr("x", barX(barX.ticks().pop()) - 1)
-            .attr("dy", "0.32em")
-            .attr("fill", "#000")
-            .attr("text-anchor", "start")
-            .text("Number of P/PA")
-            .attr("transform", "translate("+ (-width) +",-10)");
-        });
-    </script>
+            barG.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0,0)")
+                .call(d3v4.axisBottom(barX).ticks(null).tickSize(0))
+                .append("text")
+                .attr("y", 0)
+                .attr("x", barX(barX.ticks().pop()) - 1)
+                .attr("dy", "0.32em")
+                .attr("fill", "#000")
+                .attr("text-anchor", "start")
+                .text("Number of P/PA")
+                .attr("transform", "translate("+ (-width) +",-10)");
+            });
+        </script>
+    </div>
 </div>
 {% endif %}
 
+<div class="col shadow p-3 mb-5 bg-white rounded">
 {% if classificationHTML and testCorrectness %}
-<div class="row">
-    <h4>Prediction Accuracies</h4>
-</div>
-<div class="row">
-    <svg width="960" height="400" id="abar-svg"></svg>
-    <script>
-        var svg = d3v4.select("#abar-svg"),
-            margin = {top: 20, right: 20, bottom: 30, left: 240},
-            width = +svg.attr("width") - margin.left - margin.right,
-            height = +svg.attr("height") - margin.top - margin.bottom,
-            abarG = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    <div>
+        <h4>Prediction Accuracies</h4>
+    </div>
+    <div>
+        <svg width="960" height="400" id="abar-svg"></svg>
+        <script>
+            var svg = d3v4.select("#abar-svg"),
+                margin = {top: 20, right: 20, bottom: 30, left: 240},
+                width = +svg.attr("width") - margin.left - margin.right,
+                height = +svg.attr("height") - margin.top - margin.bottom,
+                abarG = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var abarY = d3v4.scaleBand()	
-            .rangeRound([0, height])
-            .paddingInner(0.05)
-            .align(0.1);
+            var abarY = d3v4.scaleBand()	
+                .rangeRound([0, height])
+                .paddingInner(0.05)
+                .align(0.1);
 
-        var abarX = d3v4.scaleLinear()
-            .rangeRound([0, width]);
-            
-        var abarZ = d3v4.scaleOrdinal(d3v4.schemeCategory10);
-        var colors = ["#5BEEFF", "#173B40", "#51D6E5", "#44B2BF", "#2D777F", "#e5f2f9", "#E9EDDE", "#e2e2e2"]
+            var abarX = d3v4.scaleLinear()
+                .rangeRound([0, width]);
+                
+            var abarZ = d3v4.scaleOrdinal(d3v4.schemeCategory10);
+            var colors = ["#5BEEFF", "#173B40", "#51D6E5", "#44B2BF", "#2D777F", "#e5f2f9", "#E9EDDE", "#e2e2e2"]
 
-        d3v4.tsv("{% url 'data_tools:input_classification_accuracy_bar_graph' %}", function(d, i, columns) {
-        for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
-        d.total = t;
-        return d;
-        }, function(error, data) {
-            
-        if (error) throw error;
+            d3v4.tsv("{% url 'data_tools:input_classification_accuracy_bar_graph' %}", function(d, i, columns) {
+            for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+            d.total = t;
+            return d;
+            }, function(error, data) {
+                
+            if (error) throw error;
 
-        var keys = data.columns.slice(1);
+            var keys = data.columns.slice(1);
 
-        data.sort(function(a, b) { return b.total - a.total; });
-        abarY.domain(data.map(function(d) { return d.index; }));
-        abarX.domain([0, d3v4.max(data, function(d) { return d.total; })]).nice();
-        abarZ.domain(keys);
+            data.sort(function(a, b) { return b.total - a.total; });
+            abarY.domain(data.map(function(d) { return d.index; }));
+            abarX.domain([0, d3v4.max(data, function(d) { return d.total; })]).nice();
+            abarZ.domain(keys);
 
-        abarG.append("g")
-            .selectAll("g")
-            .data(d3v4.stack().keys(keys)(data))
-            .enter().append("g")
-            .attr("fill", "#2D777F")
-            .attr("transform", "translate(0,"+margin.top+")")
-            .selectAll("rect")
-            .data(function(d) { return d; })
-            .enter().append("rect")
-            .attr("class", "bar")
-            .attr("y", function(d) { return abarY(d.data.index); })
-            .attr("x", function(d) { return abarX(d[0]); })
-            .attr("width", function(d) { return abarX(d[1]) - abarX(d[0]); })
-            .attr("height", abarY.bandwidth());
+            abarG.append("g")
+                .selectAll("g")
+                .data(d3v4.stack().keys(keys)(data))
+                .enter().append("g")
+                .attr("fill", "#2D777F")
+                .attr("transform", "translate(0,"+margin.top+")")
+                .selectAll("rect")
+                .data(function(d) { return d; })
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("y", function(d) { return abarY(d.data.index); })
+                .attr("x", function(d) { return abarX(d[0]); })
+                .attr("width", function(d) { return abarX(d[1]) - abarX(d[0]); })
+                .attr("height", abarY.bandwidth());
 
-        abarG.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(0,"+margin.top+")")
-            .call(d3v4.axisLeft(abarY));
+            abarG.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0,"+margin.top+")")
+                .call(d3v4.axisLeft(abarY));
 
-        abarG.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(0,0)")
-            .call(d3v4.axisBottom(abarX).ticks(null).tickSize(0))
-            .append("text")
-            .attr("y", 0)
-            .attr("x", abarX(abarX.ticks().pop()) - 1)
-            .attr("dy", "0.32em")
-            .attr("fill", "#000")
-            .attr("text-anchor", "start")
-            .text("Number of P/PA")
-            .attr("transform", "translate("+ (-width) +",-10)");
-        });
-    </script>
+            abarG.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0,0)")
+                .call(d3v4.axisBottom(abarX).ticks(null).tickSize(0))
+                .append("text")
+                .attr("y", 0)
+                .attr("x", abarX(abarX.ticks().pop()) - 1)
+                .attr("dy", "0.32em")
+                .attr("fill", "#000")
+                .attr("text-anchor", "start")
+                .text("Number of P/PA")
+                .attr("transform", "translate("+ (-width) +",-10)");
+            });
+        </script>
+    </div>
 </div>
 {% endif %}
 
-<div class="row">
-    <!-- View of Tag Words File -->
-    {% if tagWordsHTML %}
-    <h4>Tag Words</h4>
+<!-- View of Tag Words File -->
+{% if tagWordsHTML %}
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Tag Words</h4>
+    </div>
     <div class="scroll-vertical">
         {{tagWordsHTML | safe}}
     </div>
     <a href="/data_tools/download_tag_words"> Download Table </a>
-    {% endif %}
-    
-    <!-- View of Train Accuracies -->
-    {% if trainConfusionMatrixHTML %}
-    <h4>Train Accuracy</h4>
-    <h5>Overall Train Accuracy: {{trainCorrectness}}</h5>
-    <h5>Classification Accuracies:</h5>
+</div>
+{% endif %}
+
+<!-- View of Train Accuracies -->
+{% if trainConfusionMatrixHTML %}
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Train Accuracy</h4>
+    </div>
+    <div>
+        <h5>Overall Train Accuracy: {{trainCorrectness}}</h5>
+    </div>
+    <div>
+        <h5>Classification Accuracies:</h5>
+    </div>
     <div class="scroll-vertical">
         {{trainConfusionMatrixHTML | safe}}
     </div>
-    {% endif %}
+</div>
+{% endif %}
     
-    <!-- View of Test Accuracies-->
-    {% if testConfusionMatrixHTML %}
-    <h4>Test Accuracy</h4>
-    <h5>Overall Test Accuracy: {{testCorrectness}}</h5>
-    <h5>Classification Accuracies:</h5>
+<!-- View of Test Accuracies-->
+{% if testConfusionMatrixHTML %}
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Test Accuracy</h4>
+    </div>
+    <div>
+        <h5>Overall Test Accuracy: {{testCorrectness}}</h5>
+    </div>
+    <div>
+        <h5>Classification Accuracies:</h5>
+    </div>
     <div class="scroll-vertical">
     {{testConfusionMatrixHTML | safe}}
     </div>
-    {% endif %}
+</div>
+{% endif %}
 
-    <!-- View of Classifications-->
-    {% if classificationHTML %}
-    <h4>Results</h4>
+<!-- View of Classifications-->
+{% if classificationHTML %}
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Results</h4>
+    </div>
     <div class="scroll-both">
         {{ classificationHTML | safe }}
     </div>
     <a href="/data_tools/download_classification"> Download Table </a>
-    {% endif %}
 </div>
+{% endif %}

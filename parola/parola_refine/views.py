@@ -40,6 +40,7 @@ def reference_update(request):
     valid = False
     inputFile = None
     referenceTableHTML = None
+    sampleFileHTML = None
     
     outFolderName = '../out/'
     fileType = '.xlsx'
@@ -75,8 +76,6 @@ def reference_update(request):
     # Default View
     else:
         form = UploadFileForm()
-        sampleFileDF = pd.read_excel('../out/Sample File for Assignee Grouping.xlsx', 'Sheet1')
-        sampleFileHTML = sampleFileDF.head(10).to_html()
 
     templateHTML = 'parola_refine/reference_update.html'
     mainHTML = render_to_string(

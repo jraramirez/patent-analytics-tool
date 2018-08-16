@@ -1,32 +1,33 @@
-<div class="row">
-    <h3>Parola Refine - Assignee Grouping</h3>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h3>Parola Refine - Assignee Grouping</h3>
+    </div>
+    <div>
+        <form action="" enctype="multipart/form-data" method="post">
+            <table class="form-text">
+                <tr>
+                    <td class="label"><label class="control-label">Data Set: </label></td>
+                    <td>
+                        <select class="form-control" onChange="window.location.href=this.value">
+                            {% for dataSet in dataSetNames %}
+                            {% if dataSet == 'index' %}
+                            <option selected="selected" disabled value="/parola_refine/assignee_grouping/index">Choose one</option>
+                            {% elif data_set == dataSet %}
+                            <option selected="selected" value="/parola_refine/assignee_grouping/{{data_set}}">{{data_set}}</option>
+                            {% else %}
+                            <option value="/parola_refine/assignee_grouping/{{dataSet}}">{{dataSet}}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
 </div>
-<div class="row">
-    <form action="" enctype="multipart/form-data" method="post">
-        <table class="form-text">
-            <tr>
-                <td class="label"><label class="control-label">Data Set: </label></td>
-                <td>
-                    <select class="form-control" onChange="window.location.href=this.value">
-                        {% for dataSet in dataSetNames %}
-                        {% if dataSet == 'index' %}
-                        <option selected="selected" disabled value="/parola_refine/assignee_grouping/index">Choose one</option>
-                        {% elif data_set == dataSet %}
-                        <option selected="selected" value="/parola_refine/assignee_grouping/{{data_set}}">{{data_set}}</option>
-                        {% else %}
-                        <option value="/parola_refine/assignee_grouping/{{dataSet}}">{{dataSet}}</option>
-                        {% endif %}
-                        {% endfor %}
-                    </select>
-                </td>
-            </tr>
-        </table>
-    </form>
-</div>
-
 <!-- View of Assignee Grouping Results File
     {% if assigneeGroupingHTML %}
-    <div class="row">
+    <div>
         <h4>Assignee Grouping</h4>
         <p class="subheader">Summary</p>
         <div class="scroll-vertical">
@@ -43,10 +44,12 @@
     {% endif %}
 -->
 {% if assigneeGroupingHTML %}
-<div class="row">
-    <h4>Results</h4>
-</div>
-<div class="scroll-both">
-{{ assigneeGroupingHTML | safe}}
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Results</h4>
+    </div>
+    <div class="scroll-both">
+    {{ assigneeGroupingHTML | safe}}
+    </div>
 </div>
 {% endif %}

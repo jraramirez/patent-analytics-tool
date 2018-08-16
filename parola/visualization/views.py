@@ -299,7 +299,7 @@ def category_statistics(request, data_set, classification, category):
         hasDataSet = True
 
     # Graph preparations
-    elif(not data_set == 'index' and not selectedCategory == 'index'):
+    elif(not data_set == 'index' and not classification == 'index' and not selectedCategory == 'index'):
         if(request.method == "POST"): 
             previousNYears = int(request.POST.get('target-n-years'))
         df = pd.DataFrame()
@@ -331,37 +331,34 @@ def category_statistics(request, data_set, classification, category):
                         allCAs.append(CA)
                         allTypes.append(patentType)
         categoryList = sorted(list(set(allClass)))
-        expandedDF = pd.DataFrame()
-        expandedDF[targetCategoryColumnName] = allClass
-        expandedDF['Years'] = allYears
-        expandedDF[targetAssigneeColumnName] = allCAs
-        expandedDF['Types'] = allTypes
-        expandedDF.drop(expandedDF[expandedDF[targetCategoryColumnName] != selectedCategory.lstrip().rstrip()].index, inplace=True)
-        nPPA = len(expandedDF.index)
+        if(selectedCategory in categoryList):
+            expandedDF = pd.DataFrame()
+            expandedDF[targetCategoryColumnName] = allClass
+            expandedDF['Years'] = allYears
+            expandedDF[targetAssigneeColumnName] = allCAs
+            expandedDF['Types'] = allTypes
+            expandedDF.drop(expandedDF[expandedDF[targetCategoryColumnName] != selectedCategory.lstrip().rstrip()].index, inplace=True)
+            nPPA = len(expandedDF.index)
 
-        # Year Bar Graph Data
-        yearData = pd.crosstab(expandedDF['Years'], [expandedDF['Types']]).reset_index()
-        yearData = yearData.head(10)
-        yearData = yearData.rename(index=str, columns={
-            'Years': "Categories"
-        })
-        yearData = yearData.to_json(orient="index")
-        # yearData = cim.getCrossTabInput(expandedDF, 'Years', 'Types', 10)
+            # Year Bar Graph Data
+            yearData = pd.crosstab(expandedDF['Years'], [expandedDF['Types']]).reset_index()
+            yearData = yearData.rename(index=str, columns={
+                'Years': "Categories"
+            })
+            yearData = yearData.to_json(orient="index")
+            # yearData = cim.getCrossTabInput(expandedDF, 'Years', 'Types', 10)
 
-        # Assignee Bar Graph Data
-        assigneeData = cim.getCrossTabInput(expandedDF, targetAssigneeColumnName, 'Types', 10)
+            # Assignee Bar Graph Data
+            assigneeData = cim.getCrossTabInput(expandedDF, targetAssigneeColumnName, 'Types', 10)
 
-        # Bar Graph 2 Data
-        # expandedDFCopy = expandedDF.copy()
-        # maxYear = int(sizesDF.iloc[sizesDF['Count'].argmax()]['Year'])
-        # expandedDFCopy.drop(expandedDFCopy[expandedDFCopy[targetYearColumnName] != maxYear].index, inplace=True)
-        # assigneeCounts = pd.crosstab(expandedDFCopy[targetAssigneeColumnName], [expandedDFCopy['Types']], margins=True).sort_values('All', ascending=False).reset_index()
-        # assigneeCounts = assigneeCounts.drop(['All'], axis=1).drop([0]).head(10)        
-        # assigneeCounts.to_csv(outFolderName + outBarGraphFileName2 + barFileType, sep='\t', index=False)
-
-        hasDataSet = True
-        hasCategory = True
-        valid = True
+            hasDataSet = True
+            hasCategory = True
+            valid = True
+        else:
+            categoryList.insert(0, 'index')
+            category = selectedCategory = 'index'
+            hasDataSet = True
+            hasCategory = False
 
     templateHTML = 'visualization/category_statistics.html'
     mainHTML = render_to_string(
@@ -498,7 +495,6 @@ def assignee_statistics(request, data_set, classification, assignee):
         # Bar Graph 2 Data
         # Year Bar Graph Data
         yearData = pd.crosstab(df['Years'], [df['Types']]).reset_index()
-        yearData = yearData.head(10)
         yearData = yearData.rename(index=str, columns={
             'Years': "Categories"
         })
@@ -555,6 +551,7 @@ def cluster_map(request, data_set, classification1, classification2):
     minNodeSizeWithLabel = 20
     maxNNodes = 20
     topN = 10
+    previousNYears = 20
     
     targetCPCColumnName = 'CPCs'
     outFileName = 'clusterMapInput'
@@ -580,6 +577,11 @@ def cluster_map(request, data_set, classification1, classification2):
         selectedClass1 = df[classification1].tolist()
         df = dbq.getDataSetPatentColumn(data_set, df, classification2)
         selectedClass2 = df[classification2].tolist()
+        df = dbq.getDataSetPatentYears(data_set, df)
+        years = df['Years']
+        maxYear = max(years)
+        minYear = maxYear - previousNYears + 1
+        df = df[df.Years >= minYear]
 
         allCategories = []
         uniqueCategories1 = []
@@ -766,6 +768,7 @@ def cluster_map(request, data_set, classification1, classification2):
             'maxEdgeWeight': maxEdgeWeight,
             'minEdgeWeight': minEdgeWeight,
             'clusterData': clusterData, 
+            'previousNYears': previousNYears,
     })
     return mainHTML
 
@@ -786,6 +789,7 @@ def word_cluster_map(request, data_set, column):
     maxEdgeWeight = 0
     minNodeSizeWithLabel = 20
     maxNNodes = 30
+    previousNYears = 20
     topN = 10
         
     dataSetNames = []
@@ -801,10 +805,16 @@ def word_cluster_map(request, data_set, column):
     if(not (data_set == 'index' or column == 'index')):
         if(request.method == "POST"): 
             maxNNodes = int(request.POST.get('target-n-nodes'))
+            previousNYears = int(request.POST.get('target-n-years'))
         # if(len(df.index)>1000):
         #     df = df.sample(n=500, replace=False, random_state=17)]
         df = pd.DataFrame()
         df = dbq.getDataSetPatentTACs(data_set, df)
+        df = dbq.getDataSetPatentYears(data_set, df)
+        years = df['Years']
+        maxYear = max(years)
+        minYear = maxYear - previousNYears + 1
+        df = df[df.Years >= minYear]
 
         wordList = []
         f = open('../out/words.txt', 'r')
@@ -938,7 +948,8 @@ def word_cluster_map(request, data_set, column):
             'maxEdgeWeight': maxEdgeWeight,
             'minEdgeWeight': minEdgeWeight,
             'clusterData': clusterData,
-            'maxNNodes': maxNNodes
+            'maxNNodes': maxNNodes,
+            'previousNYears': previousNYears,
     })
     return mainHTML
 

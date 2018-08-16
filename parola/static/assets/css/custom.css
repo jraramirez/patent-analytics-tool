@@ -8,4 +8,10 @@ footer {
 
 .body-content {
 	padding: 4vh 0;
+	background-color: #e9ebee;
+}
+
+.col {
+	padding:15px;
+	margin:15px;
 }

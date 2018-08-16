@@ -1,176 +1,178 @@
-<div class="row">
-    <h3>USPTO Trends</h3>
-</div>
-<div class="row">
-    <table class="form-text">
-        <tr>
-            <td class="label"><label class="control-label">Latest Date: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for d in dates %}
-                    {% if date == d %}
-                    <option selected="selected" value="/uspto/general_trends/{{date}}">{{date}}</option>
-                    {% else %}
-                    <option value="/uspto/general_trends/{{d}}">{{d}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        <form action="" enctype="multipart/form-data" method="post">
-        {% csrf_token %}
-        <tr>
-            <td class="label"><label class="control-label">Limit Rankings to Top: </label></td>
-            <td>
-                <input class="form-control" type="number" value="{{targetN}}" name="target-n">
-            </td>
-        </tr>  
-        </form>
-    </table>
-</div>
-<!-- <div class="row">
-    <button id="download-line-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-line-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div> -->
-<div class="row">
-    <h4>Weekly Number of Patents</h4>
-</div>
-<div class="row">
-    <svg width="768" height="360" id="line-svg"></svg>    
-    <script>
-        var parser = new DOMParser;
-        var dom = parser.parseFromString("{{ yearData }}", 'text/html');
-        var decodedString = dom.body.textContent;
-            console.log(decodedString);
-        var lineData = JSON.parse(decodedString);
-            console.log(lineData);
-            lineData = Object.values(lineData);
-        var svg = d3v4.select("#line-svg"),
-            margin = {top: 30, right: 30, bottom: 30, left: 60},
-            width = svg.attr("width") - margin.left - margin.right,
-            height = svg.attr("height") - margin.top - margin.bottom,
-            lineG = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-        var parseTime = d3v4.timeParse("%Y%m%d");
-        var lineX = d3v4.scaleTime().rangeRound([0, width]);
-            lineY = d3v4.scaleLinear().range([height, 0]);
-
-        var line = d3v4.line()
-            // .curve(d3v4.curveBasis)
-            .x(function(d) { return lineX(parseTime(d.Dates)); })
-            .y(function(d) { return lineY(d.nPPA); });
-        
-        lineX.domain(d3v4.extent(lineData, function(d) { return parseTime(d.Dates); }));
-        lineY.domain(d3v4.extent(lineData, function(d) { return d.nPPA; }));
-
-        lineG.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3v4.axisBottom(lineX).tickSize(0).tickFormat(d3v4.timeFormat("%m-%d")))
-            .select(".domain")
-            .remove();
-
-        lineG.append("g")
-            .attr("class", "yaxis")
-            .call(d3v4.axisLeft(lineY).tickSize(0).tickFormat(d3v4.format("d")))
-            .append("text")
-
-        lineG.append("path")
-            .datum(lineData)
-            .attr("fill", "none")
-            .attr("stroke", "#2D777F")
-            .attr("stroke-linejoin", "round")
-            .attr("stroke-linecap", "round")
-            .attr("stroke-width", 3)
-            .attr("d", line);
-
-        d3v4.select("#download-line-svg")
-        .on('click', function(){
-            saveSvgAsPng(document.getElementById("line-svg"), "Number of P/PA per Week.png", {scale: 10});
-        })
-        // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lineData));
-        // var dlAnchorElem = document.getElementById('download-line-raw');
-        // dlAnchorElem.setAttribute("href", dataStr);
-        // dlAnchorElem.setAttribute("download", "Number of P/PA per Year.json");
-        var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(lineData)));
-        var dlAnchorElem = document.getElementById('download-line-raw');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", "Number of P/PA per Week.csv");
-    </script>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h3>USPTO Trends</h3>
+    </div>
+    <div>
+        <table class="form-text">
+            <tr>
+                <td class="label"><label class="control-label">Latest Date: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for d in dates %}
+                        {% if date == d %}
+                        <option selected="selected" value="/uspto/general_trends/{{date}}">{{date}}</option>
+                        {% else %}
+                        <option value="/uspto/general_trends/{{d}}">{{d}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <form action="" enctype="multipart/form-data" method="post">
+            {% csrf_token %}
+            <tr>
+                <td class="label"><label class="control-label">Limit Rankings to Top: </label></td>
+                <td>
+                    <input class="form-control" type="number" value="{{targetN}}" name="target-n">
+                </td>
+            </tr>  
+            </form>
+        </table>
+    </div>
 </div>
 
-<div class="row">
-    <h4>Top Gainers</h4>
-</div>
-<div class="row">
-    <table class="table table-hover">
-        <tr>
-            <th>Assignees</th>
-            <th>Increase (% Change)</th>
-        </tr>
-        {% for assignee, change, percentChange in assigneeChanges %}
-        <tr>
-        <td>{{assignee}}</td>
-        {% if change > 0 %}
-        <td class="success">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
-        {% elif change < 0 %}
-        <td class="danger">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
-        {% else %}
-        <td>{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
-        {% endif %}
-        </tr>
-    {% endfor %}
-    </table>
+
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Weekly Number of Patents</h4>
+    </div>
+    <div>
+        <svg width="768" height="360" id="line-svg"></svg>    
+        <script>
+            var parser = new DOMParser;
+            var dom = parser.parseFromString("{{ yearData }}", 'text/html');
+            var decodedString = dom.body.textContent;
+                console.log(decodedString);
+            var lineData = JSON.parse(decodedString);
+                console.log(lineData);
+                lineData = Object.values(lineData);
+            var svg = d3v4.select("#line-svg"),
+                margin = {top: 30, right: 30, bottom: 30, left: 60},
+                width = svg.attr("width") - margin.left - margin.right,
+                height = svg.attr("height") - margin.top - margin.bottom,
+                lineG = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            var parseTime = d3v4.timeParse("%Y%m%d");
+            var lineX = d3v4.scaleTime().rangeRound([0, width]);
+                lineY = d3v4.scaleLinear().range([height, 0]);
+
+            var line = d3v4.line()
+                // .curve(d3v4.curveBasis)
+                .x(function(d) { return lineX(parseTime(d.Dates)); })
+                .y(function(d) { return lineY(d.nPPA); });
+            
+            lineX.domain(d3v4.extent(lineData, function(d) { return parseTime(d.Dates); }));
+            lineY.domain(d3v4.extent(lineData, function(d) { return d.nPPA; }));
+
+            lineG.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3v4.axisBottom(lineX).tickSize(0).tickFormat(d3v4.timeFormat("%m-%d")))
+                .select(".domain")
+                .remove();
+
+            lineG.append("g")
+                .attr("class", "yaxis")
+                .call(d3v4.axisLeft(lineY).tickSize(0).tickFormat(d3v4.format("d")))
+                .append("text")
+
+            lineG.append("path")
+                .datum(lineData)
+                .attr("fill", "none")
+                .attr("stroke", "#2D777F")
+                .attr("stroke-linejoin", "round")
+                .attr("stroke-linecap", "round")
+                .attr("stroke-width", 3)
+                .attr("d", line);
+
+            d3v4.select("#download-line-svg")
+            .on('click', function(){
+                saveSvgAsPng(document.getElementById("line-svg"), "Number of P/PA per Week.png", {scale: 10});
+            })
+            // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lineData));
+            // var dlAnchorElem = document.getElementById('download-line-raw');
+            // dlAnchorElem.setAttribute("href", dataStr);
+            // dlAnchorElem.setAttribute("download", "Number of P/PA per Year.json");
+            var dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(convertToCSV(JSON.stringify(lineData)));
+            var dlAnchorElem = document.getElementById('download-line-raw');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "Number of P/PA per Week.csv");
+        </script>
+    </div>
 </div>
 
-<div class="row">
-    <h4>Top Losers</h4>
-</div>
-<div class="row">
-    <table class="table table-hover">
-        <tr>
-            <th>Assignees</th>
-            <th>Decrease (% Change)</th>
-        </tr>
-        {% for assignee, change, percentChange in assigneeLosersChanges %}
-        <tr>
-        <td>{{assignee}}</td>
-        {% if change > 0 %}
-        <td class="success">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
-        {% elif change < 0 %}
-        <td class="danger">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
-        {% else %}
-        <td>{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
-        {% endif %}
-        </tr>
-    {% endfor %}
-    </table>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top Gainers</h4>
+    </div>
+    <div>
+        <table class="table table-hover">
+            <tr>
+                <th>Assignees</th>
+                <th>Increase (% Change)</th>
+            </tr>
+            {% for assignee, change, percentChange in assigneeChanges %}
+            <tr>
+            <td>{{assignee}}</td>
+            {% if change > 0 %}
+            <td class="success">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
+            {% elif change < 0 %}
+            <td class="danger">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
+            {% else %}
+            <td>{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
+            {% endif %}
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
 </div>
 
-<div class="row">
-    <h4>Sectors</h4>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top Losers</h4>
+    </div>
+    <div>
+        <table class="table table-hover">
+            <tr>
+                <th>Assignees</th>
+                <th>Decrease (% Change)</th>
+            </tr>
+            {% for assignee, change, percentChange in assigneeLosersChanges %}
+            <tr>
+            <td>{{assignee}}</td>
+            {% if change > 0 %}
+            <td class="success">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
+            {% elif change < 0 %}
+            <td class="danger">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
+            {% else %}
+            <td>{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
+            {% endif %}
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
 </div>
-<div class="row">
-    <table class="table table-hover">
-        <tr>
-            <th>Sector</th>
-            <th>Increase/Decrease (% Change)</th>
-        </tr>
-        {% for sector, change, percentChange in sectorChanges %}
-        <tr>
-        <td>{{sector}}</td>
-        {% if change > 0 %}
-        <td class="success">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
-        {% elif change < 0 %}
-        <td class="danger">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
-        {% else %}
-        <td>{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
-        {% endif %}
-        </tr>
-    {% endfor %}
-    </table>
+
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Sectors</h4>
+    </div>
+    <div>
+        <table class="table table-hover">
+            <tr>
+                <th>Sector</th>
+                <th>Increase/Decrease (% Change)</th>
+            </tr>
+            {% for sector, change, percentChange in sectorChanges %}
+            <tr>
+            <td>{{sector}}</td>
+            {% if change > 0 %}
+            <td class="success">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
+            {% elif change < 0 %}
+            <td class="danger">{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
+            {% else %}
+            <td>{{change | floatformat:"0"}} ({{percentChange | floatformat:"2"}}%)</td>
+            {% endif %}
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
 </div>

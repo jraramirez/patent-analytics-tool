@@ -1,315 +1,335 @@
-<div class="row">
-    <h3>Word Cluster Map</h3>
-</div>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h3>Word Cluster Map</h3>
+    </div>
 
-<div class="row">
-    <table class="form-text">
-        <tr>
-            <td class="label"><label class="control-label">Data Set: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for dataSet in dataSetNames %}
-                    {% if dataSet == 'index' %}
-                    <option selected="selected" disabled value="/visualization/word_cluster_map/index/{{column}}">Choose one</option>
-                    {% elif data_set == dataSet %}
-                    <option selected="selected" value="/visualization/word_cluster_map/{{data_set}}/{{column}}">{{data_set}}</option>
-                    {% else %}
-                    <option value="/visualization/word_cluster_map/{{dataSet}}/{{column}}">{{dataSet}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label">Column: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for columnName in columnNames %}
-                    {% if columnName == 'index'%}
-                    <option selected="selected" disabled value="/">Choose one</option>
-                    {% elif columnName == column %}
-                    <option selected="selected" value="/visualization/word_cluster_map/{{data_set}}/{{column}}">{{column}}</option>
-                    {% else %}
-                    <option value="/visualization/word_cluster_map/{{data_set}}/{{columnName}}">{{columnName}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        {% if valid %}
-        <form action="" enctype="multipart/form-data" method="post">
-            {% csrf_token %}
+    <div>
+        <table class="form-text">
             <tr>
-                <td class="label"><label class="control-label">Limit Number of Nodes: </label></td>
+                <td class="label"><label class="control-label">Data Set: </label></td>
                 <td>
-                    <input class="form-control" type="number" value="{{maxNNodes}}" name="target-n-nodes">
-                </td>
-            </tr>  
-            <tr>
-                <td class="label"><label class="control-label"></label></td>
-                <td>
-                    <input class="btn btn-info" type="submit" value="Update" name="update">
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for dataSet in dataSetNames %}
+                        {% if dataSet == 'index' %}
+                        <option selected="selected" disabled value="/visualization/word_cluster_map/index/{{column}}">Choose one</option>
+                        {% elif data_set == dataSet %}
+                        <option selected="selected" value="/visualization/word_cluster_map/{{data_set}}/{{column}}">{{data_set}}</option>
+                        {% else %}
+                        <option value="/visualization/word_cluster_map/{{dataSet}}/{{column}}">{{dataSet}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
                 </td>
             </tr>
-            </form>
-        {% endif %}
-    </table>
+            <tr>
+                <td class="label"><label class="control-label">Column: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for columnName in columnNames %}
+                        {% if columnName == 'index'%}
+                        <option selected="selected" disabled value="/">Choose one</option>
+                        {% elif columnName == column %}
+                        <option selected="selected" value="/visualization/word_cluster_map/{{data_set}}/{{column}}">{{column}}</option>
+                        {% else %}
+                        <option value="/visualization/word_cluster_map/{{data_set}}/{{columnName}}">{{columnName}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            {% if valid %}
+            <form action="" enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+                <tr>
+                    <td class="label"><label class="control-label">Limit Number of Nodes: </label></td>
+                    <td>
+                        <input class="form-control" type="number" value="{{maxNNodes}}" name="target-n-nodes">
+                    </td>
+                </tr>  
+                <tr>
+                    <td class="label"><label class="control-label">Limit Number of Years: </label></td>
+                    <td>
+                        <input class="form-control" type="number" value="{{previousNYears}}" name="target-n-years">
+                    </td>
+                </tr> 
+                <tr>
+                    <td class="label"><label class="control-label"></label></td>
+                    <td>
+                        <input class="btn btn-info" type="submit" value="Update" name="update">
+                    </td>
+                </tr>
+                </form>
+            {% endif %}
+        </table>
+    </div>
 </div>
 
 {% if valid %}
 <!-- View of Cluster Map-->
-<div class="row">
-    <h4>Network Graph</h4>
-</div>
-<div class="row">
-    <button id="download-line-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-line-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
-    <style>
-        .link {
-            opacity: 0.7;
-        }
-    </style>
-    <script>
-        var margin = 500;
-        var toggle = 0;
-
-        colors = ["#2D777F", "#ed7d2e", "#5BEEFF", "#258296", "#6cc8db", "#194660", "#316e8c", "#44B2BF", "#a6c8cf", "#e2e2e2", "#c1dae1", "#999", "#90b9c0"]
-
-        // Generates a tooltip for a SVG circle element based on its ID
-        function addTooltip(circle) {
-            var x = parseFloat(circle.attr("cx"));
-            var y = parseFloat(circle.attr("cy"));
-            var r = parseFloat(circle.attr("r"));
-            var text = circle.attr("id");
-
-            var tooltip = d3.select("#plot")
-                .append("text")
-                .text(text)
-                .attr("x", x)
-                .attr("y", y)
-                .attr("dy", -r * 2)
-                .attr("id", "tooltip");
-
-            var offset = tooltip.node().getBBox().width / 2;
-
-            if ((x - offset) < -radius) {
-                tooltip.attr("text-anchor", "start");
-                tooltip.attr("dx", -r);
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Network Graph</h4>
+    </div>
+    <div>
+        <button id="download-line-svg" type="button" class="btn btn-default" aria-label="Download Chart">
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-line-raw" class="btn btn-default" role="button">
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
+    <div>
+        <style>
+            .link {
+                opacity: 0.7;
+                fill: none;
             }
-            else if ((x + offset) > (radius)) {
-                tooltip.attr("text-anchor", "end");
-                tooltip.attr("dx", r);
-            }
-            else {
-                tooltip.attr("text-anchor", "middle");
-                tooltip.attr("dx", 0);
-            }
-        }
+        </style>
+        <script>
+            var margin = 500;
+            var toggle = 0;
 
-        // Draws an arc diagram for the provided undirected graph
-        function drawGraph(graph) {
-            // fix graph links to map to objects instead of indices
-            graph.links.forEach(function(d, i) {
-                d.source = isNaN(d.source) ? d.source : graph.nodes[d.source];
-                d.target = isNaN(d.target) ? d.target : graph.nodes[d.target];
-            });
+            colors = ["#2D777F", "#ed7d2e", "#5BEEFF", "#258296", "#6cc8db", "#194660", "#316e8c", "#44B2BF", "#a6c8cf", "#e2e2e2", "#c1dae1", "#999", "#90b9c0"]
 
-            var nodes = graph.nodes;
-            var links = graph.links;
+            // Generates a tooltip for a SVG circle element based on its ID
+            function addTooltip(circle) {
+                var x = parseFloat(circle.attr("cx"));
+                var y = parseFloat(circle.attr("cy"));
+                var r = parseFloat(circle.attr("r"));
+                var text = circle.attr("id");
 
-            allGroups = [];
-            allSizes = [];
-            allWeights = [];
+                var tooltip = d3.select("#plot")
+                    .append("text")
+                    .text(text)
+                    .attr("x", x)
+                    .attr("y", y)
+                    .attr("dy", -r * 2)
+                    .attr("id", "tooltip");
 
-            for (j = 0; j < nodes.length; j++) {
-                allGroups.push(nodes[j].group);
-                allSizes.push(nodes[j].size);
-            }
-            for (j = 0; j < links.length; j++) {
-                allWeights.push(links[j].weight);
-            }
-            nGroups = Math.max.apply(null, allGroups) + 1;
-            minSize = Math.min.apply(null, allSizes);
-            maxSize = Math.max.apply(null, allSizes);
-            minWeight = Math.min.apply(null, allWeights);
-            maxWeight = Math.max.apply(null, allWeights);
+                var offset = tooltip.node().getBBox().width / 2;
 
-            diameter = 2000 + maxSize*0.7;
-            radius = diameter / 2;
-
-            // create svg image
-            var svg  = d3.select("body").select("#circle")
-                .append("svg")
-                .attr("width", diameter)
-                .attr("height", diameter)
-                .attr("id", "cluster-map");
-
-            // create plot area within svg image
-            var plot = svg.append("g")
-                .attr("id", "plot")
-                .attr("transform", "translate(" + radius + ", " + radius + ")");
-
-            // calculate node positions
-            circleLayout(graph.nodes);
-
-            // draw nodes and links
-            drawNodes(nodes, links, minSize, maxSize, minWeight, maxWeight);
-        }
-
-        // Calculates node locations
-        function circleLayout(nodes) {
-            // sort nodes by group
-            nodes.sort(function(a, b) {
-                return a.group - b.group || a.size - b.size;
-                // return a.group - b.group;
-            });
-
-            // use to scale node index to theta value
-            var scale = d3.scale.linear()
-                .domain([0, nodes.length])
-                .range([0, 2 * Math.PI]);
-
-            // calculate theta for each node
-            nodes.forEach(function(d, i) {
-                // calculate polar coordinates
-                var theta  = scale(i+5);
-                var radial = radius - margin;
-
-                // convert to cartesian coordinates
-                d.x = radial * Math.sin(theta);
-                d.y = radial * Math.cos(theta);
-                d.textX = 1.3*radial * Math.sin(theta);
-                d.textY = 1.3*radial * Math.cos(theta);
-            });
-        }
-
-        function drawNodes(nodes, links, minSize, maxSize, minWeight, maxWeight) {
-            
-            linkColors = ["#e5f2f9", "#173B40"]
-            var linkColorScale = d3.scale.linear()
-                .domain([minWeight, maxWeight])
-                .range(linkColors);
-
-            var link = d3.select("#plot").selectAll(".link")
-                .data(links)
-                .enter()
-                .append("line")
-                .attr("class", "link")
-                .attr("x1", function(d) { return d.source.x; })
-                .attr("y1", function(d) { return d.source.y; })
-                .attr("x2", function(d) { return d.target.x; })
-                .attr("y2", function(d) { return d.target.y; })
-                .style("stroke-width", function (d) {
-                    return d.weight/maxWeight*50;
-                })
-                .style("stroke", function (d) {
-                    return linkColorScale(d.weight);
-                });
-
-            var node = d3.select("#plot").selectAll(".node")
-                .data(nodes)
-                .enter().append("g")
-                .attr("class", "node");
-            
-            node.append("circle")
-                .attr("class", "node")
-                .attr("id", function(d, i) { return d.name; })
-                .attr("cx", function(d, i) { return d.x; })
-                .attr("cy", function(d, i) { return d.y; })
-                .attr("r", function(d) { return d.size/maxSize*100; })
-                // .style("fill",   function(d, i) { return color(d.group); })
-                .style("fill",   function(d, i) { return colors[d.group]; })
-                // .on("mouseover", function(d, i) { addTooltip(d3.select(this)); })
-                // .on("mouseout",  function(d, i) { d3.select("#tooltip").remove(); });
-
-            node.on('mouseover', connectedNodes);
-            node.on('mouseout', connectedNodes);
-
-            node.append("text")
-                .attr("dx", function(d, i) { return d.textX; })
-                .attr("dy", function(d, i) { return d.textY; })
-                .attr("text-anchor", "middle")
-                .text(function(d) { return d.name})
-                .attr("font-size", function(d) { return 42; })
-
-
-            //Create an array logging what is connected to what
-            var linkedByIndex = {};
-            for (i = 0; i < nodes.length; i++) {
-                linkedByIndex[i + "," + i] = 1;
-            };
-            links.forEach(function (d) {
-                linkedByIndex[d.source.index + "," + d.target.index] = 1;
-            });
-            //This function looks up whether a pair are neighbours  
-            function neighboring(a, b) {
-                return linkedByIndex[a.index + "," + b.index];
-            }
-
-            function connectedNodes() {
-                if (toggle == 0) {
-                    //Reduce the opacity of all but the neighbouring nodes
-                    d = d3.select(this).node().__data__;
-                    node.style("opacity", function (o) {
-                        return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
-                    });
-                    
-                    link.style("opacity", function (o) {
-                        return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
-                    });
-                    
-                    //Reduce the op
-                    
-                    toggle = 1;
-                } else {
-                    //Put them back to opacity=1
-                    node.style("opacity", 1);
-                    link.style("opacity", 0.7);
-                    toggle = 0;
+                if ((x - offset) < -radius) {
+                    tooltip.attr("text-anchor", "start");
+                    tooltip.attr("dx", -r);
+                }
+                else if ((x + offset) > (radius)) {
+                    tooltip.attr("text-anchor", "end");
+                    tooltip.attr("dx", r);
+                }
+                else {
+                    tooltip.attr("text-anchor", "middle");
+                    tooltip.attr("dx", 0);
                 }
             }
-        }
 
-        // Draws curved edges between nodes
-        function drawCurves(links) {
-            // remember this from tree example?
-            var curve = d3.svg.diagonal()
-                .projection(function(d) { return [d.x, d.y]; });
+            // Draws an arc diagram for the provided undirected graph
+            function drawGraph(graph) {
+                // fix graph links to map to objects instead of indices
+                graph.links.forEach(function(d, i) {
+                    d.source = isNaN(d.source) ? d.source : graph.nodes[d.source];
+                    d.target = isNaN(d.target) ? d.target : graph.nodes[d.target];
+                });
 
-            d3.select("#plot").selectAll(".link")
-                .data(links)
-                .enter()
-                .append("path")
-                .attr("class", "link")
-                .attr("d", curve);
-        }
-    </script>
+                var nodes = graph.nodes;
+                var links = graph.links;
 
-    <div align="center" id="circle"></div>
-    <script>
-        var parser = new DOMParser;
-        var dom = parser.parseFromString("{{ clusterData }}", 'text/html');
-        var decodedString = dom.body.textContent;
-        decodedString = decodedString.replace(/'/g, '"');
-        var clusterData = JSON.parse(decodedString);
-        drawGraph(clusterData);
+                allGroups = [];
+                allSizes = [];
+                allWeights = [];
 
-        d3.select("#download-line-svg")
-        .on('click', function(){
-        saveSvgAsPng(document.getElementById("cluster-map"), "Cluster Map", {scale: 10});
-        })
-        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(clusterData));
-            var dlAnchorElem = document.getElementById('download-line-raw');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", "Cluster Map.json");
-    </script>
+                for (j = 0; j < nodes.length; j++) {
+                    allGroups.push(nodes[j].group);
+                    allSizes.push(nodes[j].size);
+                }
+                for (j = 0; j < links.length; j++) {
+                    allWeights.push(links[j].weight);
+                }
+                nGroups = Math.max.apply(null, allGroups) + 1;
+                minSize = Math.min.apply(null, allSizes);
+                maxSize = Math.max.apply(null, allSizes);
+                minWeight = Math.min.apply(null, allWeights);
+                maxWeight = Math.max.apply(null, allWeights);
+
+                diameter = 2000 + maxSize*0.7;
+                radius = diameter / 2;
+
+                // create svg image
+                var svg  = d3.select("body").select("#circle")
+                    .append("svg")
+                    .attr("width", diameter)
+                    .attr("height", diameter)
+                    .attr("id", "cluster-map");
+
+                // create plot area within svg image
+                var plot = svg.append("g")
+                    .attr("id", "plot")
+                    .attr("transform", "translate(" + radius + ", " + radius + ")");
+
+                // calculate node positions
+                circleLayout(graph.nodes);
+
+                // draw nodes and links
+                drawNodes(nodes, links, minSize, maxSize, minWeight, maxWeight);
+            }
+
+            // Calculates node locations
+            function circleLayout(nodes) {
+                // sort nodes by group
+                nodes.sort(function(a, b) {
+                    return a.group - b.group || a.size - b.size;
+                    // return a.group - b.group;
+                });
+
+                // use to scale node index to theta value
+                var scale = d3.scale.linear()
+                    .domain([0, nodes.length])
+                    .range([0, 2 * Math.PI]);
+
+                // calculate theta for each node
+                nodes.forEach(function(d, i) {
+                    // calculate polar coordinates
+                    var theta  = scale(i+5);
+                    var radial = radius - margin;
+
+                    // convert to cartesian coordinates
+                    d.x = radial * Math.sin(theta);
+                    d.y = radial * Math.cos(theta);
+                    d.textX = 1.3*radial * Math.sin(theta);
+                    d.textY = 1.3*radial * Math.cos(theta);
+                });
+            }
+
+            function drawNodes(nodes, links, minSize, maxSize, minWeight, maxWeight) {
+                
+                linkColors = ["#e5f2f9", "#173B40"]
+                var linkColorScale = d3.scale.linear()
+                    .domain([minWeight, maxWeight])
+                    .range(linkColors);
+
+                var link = d3.select("#plot").selectAll(".link")
+                    .data(links)
+                    .enter()
+                    .append("path")
+                    .attr("class", "link")
+                    // .attr("x1", function(d) { return d.source.x; })
+                    // .attr("y1", function(d) { return d.source.y; })
+                    // .attr("x2", function(d) { return d.target.x; })
+                    // .attr("y2", function(d) { return d.target.y; })
+                    .attr("d", function(d) { 
+                        var dx = d.target.x - d.source.x,
+                            dy = d.target.y - d.source.y;
+                            dr = Math.sqrt(dx * dx + dy * dy);
+                        return "M" + 
+                            d.source.x + "," + 
+                            d.source.y + "A" + 
+                            dr + "," + dr + " 0 0,1 " + 
+                            d.target.x + "," + 
+                            d.target.y;
+                    })
+                    .style("stroke-width", function (d) {
+                        return d.weight/maxWeight*50;
+                    })
+                    .style("stroke", function (d) {
+                        return linkColorScale(d.weight);
+                    });
+
+                var node = d3.select("#plot").selectAll(".node")
+                    .data(nodes)
+                    .enter().append("g")
+                    .attr("class", "node");
+                
+                node.append("circle")
+                    .attr("class", "node")
+                    .attr("id", function(d, i) { return d.name; })
+                    .attr("cx", function(d, i) { return d.x; })
+                    .attr("cy", function(d, i) { return d.y; })
+                    .attr("r", function(d) { return d.size/maxSize*100; })
+                    // .style("fill",   function(d, i) { return color(d.group); })
+                    .style("fill",   function(d, i) { return colors[d.group]; })
+                    // .on("mouseover", function(d, i) { addTooltip(d3.select(this)); })
+                    // .on("mouseout",  function(d, i) { d3.select("#tooltip").remove(); });
+
+                node.on('mouseover', connectedNodes);
+                node.on('mouseout', connectedNodes);
+
+                node.append("text")
+                    .attr("dx", function(d, i) { return d.textX; })
+                    .attr("dy", function(d, i) { return d.textY; })
+                    .attr("text-anchor", "middle")
+                    .text(function(d) { return d.name})
+                    .attr("font-size", function(d) { return 42; })
+
+
+                //Create an array logging what is connected to what
+                var linkedByIndex = {};
+                for (i = 0; i < nodes.length; i++) {
+                    linkedByIndex[i + "," + i] = 1;
+                };
+                links.forEach(function (d) {
+                    linkedByIndex[d.source.index + "," + d.target.index] = 1;
+                });
+                //This function looks up whether a pair are neighbours  
+                function neighboring(a, b) {
+                    return linkedByIndex[a.index + "," + b.index];
+                }
+
+                function connectedNodes() {
+                    if (toggle == 0) {
+                        //Reduce the opacity of all but the neighbouring nodes
+                        d = d3.select(this).node().__data__;
+                        node.style("opacity", function (o) {
+                            return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
+                        });
+                        
+                        link.style("opacity", function (o) {
+                            return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
+                        });
+                        
+                        //Reduce the op
+                        
+                        toggle = 1;
+                    } else {
+                        //Put them back to opacity=1
+                        node.style("opacity", 1);
+                        link.style("opacity", 0.7);
+                        toggle = 0;
+                    }
+                }
+            }
+
+            // Draws curved edges between nodes
+            function drawCurves(links) {
+                // remember this from tree example?
+                var curve = d3.svg.diagonal()
+                    .projection(function(d) { return [d.x, d.y]; });
+
+                d3.select("#plot").selectAll(".link")
+                    .data(links)
+                    .enter()
+                    .append("path")
+                    .attr("class", "link")
+                    .attr("d", curve);
+            }
+        </script>
+
+        <div align="center" id="circle"></div>
+        <script>
+            var parser = new DOMParser;
+            var dom = parser.parseFromString("{{ clusterData }}", 'text/html');
+            var decodedString = dom.body.textContent;
+            decodedString = decodedString.replace(/'/g, '"');
+            var clusterData = JSON.parse(decodedString);
+            drawGraph(clusterData);
+
+            d3.select("#download-line-svg")
+            .on('click', function(){
+            saveSvgAsPng(document.getElementById("cluster-map"), "Cluster Map", {scale: 10});
+            })
+            var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(clusterData));
+                var dlAnchorElem = document.getElementById('download-line-raw');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", "Cluster Map.json");
+        </script>
+    </div>
 </div>
 {% endif %}

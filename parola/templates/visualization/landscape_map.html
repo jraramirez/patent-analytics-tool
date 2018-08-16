@@ -1,209 +1,217 @@
-<div class="row">
-    <h3>Landscape Map</h3>
-</div>
-
-{% if hasDataSet and not valid %}
-<div class="row">
-    <h4>Setup the topic model</h4>
-</div>
-{% endif %}
-
-<div class="row">
-    <table class="form-text">
-        <tr>
-            <td class="label"><label class="control-label">Data set: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for dataSet in dataSetNames %}
-                    {% if dataSet == 'index' %}
-                    <option selected="selected" disabled value="/visualization/landscape_map/index">Choose one</option>
-                    {% elif data_set == dataSet %}
-                    <option selected="selected" value="/visualization/landscape_map/{{data_set}}">{{data_set}}</option>
-                    {% else %}
-                    <option value="/visualization/landscape_map/{{dataSet}}">{{dataSet}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h3>Landscape Map</h3>
+    </div>
 
     {% if hasDataSet and not valid %}
-    <form action="" enctype="multipart/form-data" method="post">
-    {% csrf_token %}
-        <tr>
-            <td class="label"><label class="control-label">Features: </label></td>
-            <td><input type="checkbox" name="features" value="titles" checked="checked">Titles</td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label"></label></td>
-            <td><input type="checkbox" name="features" value="abstracts" checked="checked">Abstracts</td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label"></label></td>
-            <td><input type="checkbox" name="features" value="independentclaims" checked="checked">Independent Claims</td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label">Method: </label></td>
-            <td>
-                <input type="radio" name="column-type" value="gradientboosting" checked="checked"> Latent Dirichlet Allocation <br>
-                <input type="radio" name="column-type" value="randomforest" disabled="disabled"> NMF <br>
-            </td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label">Number of Topics: </label></td>
-            <td>
-                <input class="form-control" type="number" value="8" name="target-n-components">
-            </td>
-        </tr>             
-        <tr>
-            <td class="label"><label class="control-label">N-Gram Range: </label></td>
-            <td>
-                <input class="form-control" type="number" value="2" name="target-n-gram-1">
-            </td>
-            <td>
-                <input class="form-control" type="number" value="4" name="target-n-gram-2">
-            </td>
-        </tr>                
-        <tr>
-            <td class="label"><label class="control-label"></label></td>
-            <td>
-                <input class="btn btn-info" type="submit" value="Finish" name="finish">
-            </td>
-        </tr>
-    </form>
+    <div>
+        <h4>Setup the topic model</h4>
+    </div>
     {% endif %}
-    </table>
+
+    <div>
+        <table class="form-text">
+            <tr>
+                <td class="label"><label class="control-label">Data set: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for dataSet in dataSetNames %}
+                        {% if dataSet == 'index' %}
+                        <option selected="selected" disabled value="/visualization/landscape_map/index">Choose one</option>
+                        {% elif data_set == dataSet %}
+                        <option selected="selected" value="/visualization/landscape_map/{{data_set}}">{{data_set}}</option>
+                        {% else %}
+                        <option value="/visualization/landscape_map/{{dataSet}}">{{dataSet}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+
+        {% if hasDataSet and not valid %}
+        <form action="" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+            <tr>
+                <td class="label"><label class="control-label">Features: </label></td>
+                <td><input type="checkbox" name="features" value="titles" checked="checked">Titles</td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label"></label></td>
+                <td><input type="checkbox" name="features" value="abstracts" checked="checked">Abstracts</td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label"></label></td>
+                <td><input type="checkbox" name="features" value="independentclaims" checked="checked">Independent Claims</td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label">Method: </label></td>
+                <td>
+                    <input type="radio" name="column-type" value="gradientboosting" checked="checked"> Latent Dirichlet Allocation <br>
+                    <input type="radio" name="column-type" value="randomforest" disabled="disabled"> NMF <br>
+                </td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label">Number of Topics: </label></td>
+                <td>
+                    <input class="form-control" type="number" value="8" name="target-n-components">
+                </td>
+            </tr>             
+            <tr>
+                <td class="label"><label class="control-label">N-Gram Range: </label></td>
+                <td>
+                    <input class="form-control" type="number" value="2" name="target-n-gram-1">
+                </td>
+                <td>
+                    <input class="form-control" type="number" value="4" name="target-n-gram-2">
+                </td>
+            </tr>                
+            <tr>
+                <td class="label"><label class="control-label"></label></td>
+                <td>
+                    <input class="btn btn-info" type="submit" value="Finish" name="finish">
+                </td>
+            </tr>
+        </form>
+        {% endif %}
+        </table>
+    </div>
 </div>
 
 {% if hasDataSet and valid %}
 <!-- Scatter Plot -->
-<div class="row">
-    <svg id="tsne-svg"></svg>
-    <style>
-        .dot {
-            opacity: 0.4;
-        }
-    </style>
-    <script>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <svg id="tsne-svg"></svg>
+        <style>
+            .dot {
+                opacity: 0.4;
+            }
+        </style>
+        <script>
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 40},
-        width = 960 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom;
+        var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
 
-    var x = d3.scale.linear()
-        .range([0, width]);
+        var x = d3.scale.linear()
+            .range([0, width]);
 
-    var y = d3.scale.linear()
-        .range([height, 0]);
+        var y = d3.scale.linear()
+            .range([height, 0]);
 
-    // var colors = ["#2D777F", "#173B40", "#2b9ca5", "#7cc9d2", "#5BEEFF", "#51D6E5", "#44B2BF", "#e5f2f9", "#E9EDDE", "#e2e2e2"]
-    // var colors = ["#5BEEFF", "#d62728", "#2b9ca5", "#ff7f0e", "#756bb1", "#66aa00", "#1f77b4", "#bcbd22"]
-    var colors = ["#ed7d2e", "#258296", "#6cc8db", "#194660", "#316e8c", "#2D777F", "#1f77b4", "#8a8a8a", "#756bb1", "#bcbd22"]
+        // var colors = ["#2D777F", "#173B40", "#2b9ca5", "#7cc9d2", "#5BEEFF", "#51D6E5", "#44B2BF", "#e5f2f9", "#E9EDDE", "#e2e2e2"]
+        // var colors = ["#5BEEFF", "#d62728", "#2b9ca5", "#ff7f0e", "#756bb1", "#66aa00", "#1f77b4", "#bcbd22"]
+        var colors = ["#ed7d2e", "#258296", "#6cc8db", "#194660", "#316e8c", "#2D777F", "#1f77b4", "#8a8a8a", "#756bb1", "#bcbd22"]
 
-    var xAxis = d3.svg.axis()
-        .scale(x)
-        .orient("bottom");
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
 
-    var yAxis = d3.svg.axis()
-        .scale(y)
-        .orient("left");
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
 
-    var svg = d3v4.select("#tsne-svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        var svg = d3v4.select("#tsne-svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var parser = new DOMParser;
-    var dom = parser.parseFromString("{{ tsneData }}", 'text/html');
-    var decodedString = dom.body.textContent;
-    var tsneData = JSON.parse(decodedString);
-    tsneData = Object.values(tsneData);
-    var columns = Object.keys(tsneData[0])
+        var parser = new DOMParser;
+        var dom = parser.parseFromString("{{ tsneData }}", 'text/html');
+        var decodedString = dom.body.textContent;
+        var tsneData = JSON.parse(decodedString);
+        tsneData = Object.values(tsneData);
+        var columns = Object.keys(tsneData[0])
 
-    var topics = []
-    tsneData.forEach(function(d) {
-        d.y = +d.y;
-        d.x = +d.x;
-        d.n = d.n;
-        d.label = d.label;
-        topics.push(d.label)
-    });
-    console.log(tsneData);
+        var topics = []
+        tsneData.forEach(function(d) {
+            d.y = +d.y;
+            d.x = +d.x;
+            d.n = d.n;
+            d.label = d.label;
+            topics.push(d.label)
+        });
+        console.log(tsneData);
 
-    let uniqueTopics = [...new Set(topics)]; 
-    
-    x.domain(d3.extent(tsneData, function(d) { return d.x; })).nice();
-    y.domain(d3.extent(tsneData, function(d) { return d.y; })).nice();
+        let uniqueTopics = [...new Set(topics)]; 
+        
+        x.domain(d3.extent(tsneData, function(d) { return d.x; })).nice();
+        y.domain(d3.extent(tsneData, function(d) { return d.y; })).nice();
 
-    // svg.append("g")
-    //     .attr("class", "x axis")
-    //     .attr("transform", "translate(0," + height + ")")
-    //     .call(xAxis);
-        // .append("text")
-        //   .attr("class", "label")
-        //   .attr("x", width)
-        //   .attr("y", -6)
-        //   .style("text-anchor", "end")
-        //   .text("X");
+        // svg.append("g")
+        //     .attr("class", "x axis")
+        //     .attr("transform", "translate(0," + height + ")")
+        //     .call(xAxis);
+            // .append("text")
+            //   .attr("class", "label")
+            //   .attr("x", width)
+            //   .attr("y", -6)
+            //   .style("text-anchor", "end")
+            //   .text("X");
 
-    // svg.append("g")
-    //     .attr("class", "y axis")
-    //     .call(yAxis);
-        // .append("text");
-        //   .attr("class", "label")
-        //   .attr("transform", "rotate(-90)")
-        //   .attr("y", 6)
-        //   .attr("dy", ".71em")
-        //   .style("text-anchor", "end")
-        //   .text("Y");
+        // svg.append("g")
+        //     .attr("class", "y axis")
+        //     .call(yAxis);
+            // .append("text");
+            //   .attr("class", "label")
+            //   .attr("transform", "rotate(-90)")
+            //   .attr("y", 6)
+            //   .attr("dy", ".71em")
+            //   .style("text-anchor", "end")
+            //   .text("Y");
 
-    svg.selectAll(".dot")
-        .data(tsneData)
-        .enter().append("circle")
-        .attr("class", "dot")
-        .attr("r", 4)
-        .attr("cx", function(d) { return x(d.x); })
-        .attr("cy", function(d) { return y(d.y); })
-            .style("fill", function(d) { return colors[d.n]; });
-        // .style("fill", function(d) { return color(d.n); });
+        svg.selectAll(".dot")
+            .data(tsneData)
+            .enter().append("circle")
+            .attr("class", "dot")
+            .attr("r", 4)
+            .attr("cx", function(d) { return x(d.x); })
+            .attr("cy", function(d) { return y(d.y); })
+                .style("fill", function(d) { return colors[d.n]; });
+            // .style("fill", function(d) { return color(d.n); });
 
-    var legend = svg.selectAll(".legend")
-        .data(uniqueTopics)
-        .enter().append("g")
-        .attr("class", "legend")
-        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-    </script>
+        var legend = svg.selectAll(".legend")
+            .data(uniqueTopics)
+            .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+        </script>
+    </div>
 </div>
 
-<div class="row">
-    <h4>Topics</h4>
-</div>
-<div class="row">
-    <table class="table-list">
-        {% for color, words in stringUniqueAllTopics %}
-        <tr>
-            <td class="legend" style="color:{{color}}">■</td>
-            <td>{{words}}</td>
-        </tr>
-        {% endfor %}
-    </table>
-</div>
-
-<div class="row">
-    <h4>Top P/PA Per Topic</h4>
-</div>
-
-<div class="row">
-    <table class="table-documents">
-        {% for color, PPAs in documentsPerTopic %}
-        <tr>
-            <td class="legend" style="color:{{color}}">■</td>
-            {% for PPA in PPAs %}
-            <td>{{PPA}}</td>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Topics</h4>
+    </div>
+    <div>
+        <table class="table-list">
+            {% for color, words in stringUniqueAllTopics %}
+            <tr>
+                <td class="legend" style="color:{{color}}">■</td>
+                <td>{{words}}</td>
+            </tr>
             {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
+        </table>
+    </div>
+</div>
+
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top P/PA Per Topic</h4>
+    </div>
+
+    <div>
+        <table class="table-documents">
+            {% for color, PPAs in documentsPerTopic %}
+            <tr>
+                <td class="legend" style="color:{{color}}">■</td>
+                {% for PPA in PPAs %}
+                <td>{{PPA}}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 </div>
 {% endif %}

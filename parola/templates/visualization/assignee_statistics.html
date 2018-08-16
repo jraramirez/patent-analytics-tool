@@ -1,109 +1,112 @@
 {% load app_filters %}
-<div class="row">
-    <h3>Assignee Statistics</h3>
-</div>
-
-<div class="row">
-    <table class="form-text">
-        <tr>
-            <td class="label"><label class="control-label">Data set: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for dataSet in dataSetNames %}
-                    {% if dataSet == 'index' %}
-                    <option selected="selected" disabled value="/visualization/assignee_statistics/index/{{classification}}/index">Choose one</option>
-                    {% elif data_set == dataSet %}
-                    <option selected="selected" value="/visualization/assignee_statistics/{{data_set}}/{{classification}}/index">{{data_set}}</option>
-                    {% else %}
-                    <option value="/visualization/assignee_statistics/{{dataSet}}/{{classification}}/index">{{dataSet}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td class="label"><label class="control-label">Classification: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for classificationName in classificationNames %}
-                    {% if classificationName == 'index'%}
-                    <option selected="selected" disabled value="/">Choose one</option>
-                    {% elif classification == classificationName %}
-                    <option selected="selected" value="/visualization/assignee_statistics/{{data_set}}/{{classification}}/{{assignee}}">{{classification}}</option>
-                    {% else %}
-                    <option value="/visualization/assignee_statistics/{{data_set}}/{{classificationName}}/{{assignee}}">{{classificationName}}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        {% if hasDataSet %}
-        <tr>
-            <td class="label"><label class="control-label"> Assignee: </label></td>
-            <td>
-                <select class="form-control" onChange="window.location.href=this.value">
-                    {% for a in assigneeList %}
-                    {% if a == 'index' %}
-                    <option selected="selected" disabled value="/visualization/assignee_statistics/index/index">Choose one</option>
-                    {% elif a == assignee %}
-                    <option selected="selected" value="/visualization/assignee_statistics/{{data_set}}/{{classification}}/{{assignee}}">{{assignee | upper}}</option>
-                    {% else %}
-                    <option value="/visualization/assignee_statistics/{{data_set}}/{{classification}}/{{a}}">{{a | upper | truncatechars:40 }}</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-        </tr>
-        {% endif %}
-        {% if valid %}
-        <form action="" enctype="multipart/form-data" method="post">
-        <tr>
-            <td class="label"><label class="control-label">Limit Number of Years: </label></td>
-            <td>
-                <input class="form-control" type="number" value="{{previousNYears}}" name="target-n-years">
-            </td>
-        </tr>    
-        <tr>
-            <td class="label"><label class="control-label"></label></td>
-            <td>
-                <input class="btn btn-info" type="submit" value="Update" name="update">
-            </td>
-        </tr>
-        </form>
-        {% endif %}
-    </table>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h3>Assignee Statistics</h3>
+    </div>
+    <div>
+        <table class="form-text">
+            <tr>
+                <td class="label"><label class="control-label">Data set: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for dataSet in dataSetNames %}
+                        {% if dataSet == 'index' %}
+                        <option selected="selected" disabled value="/visualization/assignee_statistics/index/{{classification}}/index">Choose one</option>
+                        {% elif data_set == dataSet %}
+                        <option selected="selected" value="/visualization/assignee_statistics/{{data_set}}/{{classification}}/index">{{data_set}}</option>
+                        {% else %}
+                        <option value="/visualization/assignee_statistics/{{dataSet}}/{{classification}}/index">{{dataSet}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="label"><label class="control-label">Classification: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for classificationName in classificationNames %}
+                        {% if classificationName == 'index'%}
+                        <option selected="selected" disabled value="/">Choose one</option>
+                        {% elif classification == classificationName %}
+                        <option selected="selected" value="/visualization/assignee_statistics/{{data_set}}/{{classification}}/{{assignee}}">{{classification}}</option>
+                        {% else %}
+                        <option value="/visualization/assignee_statistics/{{data_set}}/{{classificationName}}/{{assignee}}">{{classificationName}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            {% if hasDataSet %}
+            <tr>
+                <td class="label"><label class="control-label"> Assignee: </label></td>
+                <td>
+                    <select class="form-control" onChange="window.location.href=this.value">
+                        {% for a in assigneeList %}
+                        {% if a == 'index' %}
+                        <option selected="selected" disabled value="/visualization/assignee_statistics/index/index">Choose one</option>
+                        {% elif a == assignee %}
+                        <option selected="selected" value="/visualization/assignee_statistics/{{data_set}}/{{classification}}/{{assignee}}">{{assignee | upper}}</option>
+                        {% else %}
+                        <option value="/visualization/assignee_statistics/{{data_set}}/{{classification}}/{{a}}">{{a | upper | truncatechars:40 }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            {% endif %}
+            {% if valid %}
+            <form action="" enctype="multipart/form-data" method="post">
+            <tr>
+                <td class="label"><label class="control-label">Limit Number of Years: </label></td>
+                <td>
+                    <input class="form-control" type="number" value="{{previousNYears}}" name="target-n-years">
+                </td>
+            </tr>    
+            <tr>
+                <td class="label"><label class="control-label"></label></td>
+                <td>
+                    <input class="btn btn-info" type="submit" value="Update" name="update">
+                </td>
+            </tr>
+            </form>
+            {% endif %}
+        </table>
+    </div>
 </div>
 
 {% if valid %}
-<div class="row">
-    <h4>Statistics for {{ assignee | upper }}</h4>
-</div>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Statistics for {{ assignee | upper }}</h4>
+    </div>
 
-{% if nPPA %}
-<div class="row">
-    <h4>Number of P/PA</h4>
-</div>
-<div class="row">
-    <h1>{{nPPA}}</h1>
+    {% if nPPA %}
+    <div>
+        <h4>Number of P/PA</h4>
+    </div>
+    <div>
+        <h1>{{nPPA}}</h1>
+    </div>
 </div>
 {% endif %}
 
 <!-- View of Assignee Top Categories -->
-<div class="row">
-    <h4>Top {{classification}}</h4>
-</div>
-<div class="row">
-    <button id="download-bar-svg-1" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-bar-raw-1" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>    
-<div class="row">
-    <svg width="640" height="300" id="bar-1-svg"></svg>    
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top {{classification}}</h4>
+    </div>
+    <div>
+        <svg width="640" height="300" id="bar-1-svg"></svg>
+    </div>
+    <div>
+        <button id="download-bar-svg-1" type="button" class="btn btn-light" aria-label="Download Chart">
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-bar-raw-1" class="btn btn-light" role="button">
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>    
     <script>
         var parser = new DOMParser;
         var dom = parser.parseFromString("{{ categoryData }}", 'text/html');
@@ -213,41 +216,43 @@
 </div>
 
 {% if CPCLegend %}
-<div class="row">
-    <h4>CPC Descriptions</h4>
-</div>
-<div class="row">
-    <table>
-        <tr>
-            <th>CPC</th>
-            <th>Descriptions</th>
-        </tr>
-        {% for CPC, CPCDescription in CPCLegend %}
-        <tr>
-            <td>{{CPC | upper}}</td>
-            <td>{{CPCDescription}}</td>
-        </tr>
-        {% endfor %}
-    </table>
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>CPC Descriptions</h4>
+    </div>
+    <div>
+        <table>
+            <tr>
+                <th>CPC</th>
+                <th>Descriptions</th>
+            </tr>
+            {% for CPC, CPCDescription in CPCLegend %}
+            <tr>
+                <td>{{CPC | upper}}</td>
+                <td>{{CPCDescription}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 </div>
 {% endif %}
 
-<!-- Number of P/PA per Year< -->
-<div class="row">
-        <h4> {{assignee}} Number of P/PA per Year</h4>
-</div>
-<div class="row">
-    <button id="download-line-svg" type="button" class="btn btn-default" aria-label="Download Chart">
-        Download Chart
-        <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
-    </button>
-    <a id="download-line-raw" class="btn btn-default" role="button">
-        Download Raw Data
-        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    </a>
-</div>
-<div class="row">
-    <svg width="768" height="640" id="line-svg" ></svg>
+<!-- Number of P/PA per Year -->
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+            <h4> {{assignee}} Number of P/PA per Year</h4>
+    </div>
+    <div>
+        <svg width="768" height="640" id="line-svg" ></svg>
+    </div>
+    <div>
+        <button id="download-line-svg" type="button" class="btn btn-light" aria-label="Download Chart">
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+        </button>
+        <a id="download-line-raw" class="btn btn-light" role="button">
+            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+        </a>
+    </div>
     <script>
     
     var svg = d3v4.select("#line-svg"),
@@ -352,118 +357,119 @@
     </script>
 </div>
 
-
 {% if false %}
 <!-- View of Assignee Top Categories in Max Year -->
-<div class="row">
-    <h4>Top {{classification}} in {{maxYear}}</h4>
-</div>
-<div>
-    <!DOCTYPE html>
-    <style>
-        .axis .domain {
-        display: none;
-        }
+<div class="col shadow p-3 mb-5 bg-white rounded">
+    <div>
+        <h4>Top {{classification}} in {{maxYear}}</h4>
+    </div>
+    <div>
+        <!DOCTYPE html>
+        <style>
+            .axis .domain {
+            display: none;
+            }
 
-        .bar:hover {
-        fill: #5BEEFF ;
-        }
-    </style>
-    <svg width="640" height="300" id="bar-2-svg"></svg> 
-    <script>
-        var bar2SVG = d3v4.select("#bar-2-svg"),
-            margin = {top: 20, right: 20, bottom: 30, left: 240},
-            width = +bar2SVG.attr("width") - margin.left - margin.right,
-            height = +bar2SVG.attr("height") - margin.top - margin.bottom,
-            bar2G = bar2SVG.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            .bar:hover {
+            fill: #5BEEFF ;
+            }
+        </style>
+        <svg width="640" height="300" id="bar-2-svg"></svg> 
+        <script>
+            var bar2SVG = d3v4.select("#bar-2-svg"),
+                margin = {top: 20, right: 20, bottom: 30, left: 240},
+                width = +bar2SVG.attr("width") - margin.left - margin.right,
+                height = +bar2SVG.attr("height") - margin.top - margin.bottom,
+                bar2G = bar2SVG.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var bar2Y = d3v4.scaleBand()	
-            .rangeRound([0, height])
-            .paddingInner(0.05)
-            .align(0.1);
+            var bar2Y = d3v4.scaleBand()	
+                .rangeRound([0, height])
+                .paddingInner(0.05)
+                .align(0.1);
 
-        var bar2X = d3v4.scaleLinear()
-            .rangeRound([0, width]);
+            var bar2X = d3v4.scaleLinear()
+                .rangeRound([0, width]);
+                
+            var bar2Z = d3v4.scaleOrdinal()
+                .range(["#2D777F", "#173B40", "#2b9ca5", "#7cc9d2", "#5BEEFF", "#51D6E5", "#44B2BF", "#e5f2f9", "#E9EDDE", "#e2e2e2"]);
+                
+            d3v4.tsv("{% url 'visualization:input_assignee_statistics_bar_graph_2' %}", function(d, i, columns) {
+            for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+            d.total = t;
+            return d;
+            }, function(error, data) {
+                console.log(data);
+            if (error) throw error;
+
+            var keys = data.columns.slice(1);
+
+            data.sort(function(a, b) { return b.total - a.total; });
+            bar2Y.domain(data.map(function(d) { return d.CATEGORY; }));
+            bar2X.domain([0, d3v4.max(data, function(d) { return d.total; })]).nice();
+            bar2Z.domain(keys);
+
+            bar2G.append("g")
+                .selectAll("g")
+                .data(d3v4.stack().keys(keys)(data))
+                .enter().append("g")
+                .attr("fill", function(d) { return bar2Z(d.key); })
+                .attr("transform", "translate(0,"+margin.top+")")
+                .selectAll("rect")
+                .data(function(d) { return d; })
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("y", function(d) { return bar2Y(d.data.CATEGORY); })
+                .attr("x", function(d) { return bar2X(d[0]); })
+                .attr("width", function(d) { return bar2X(d[1]) - bar2X(d[0]); })
+                .attr("height", bar2Y.bandwidth());
+
+            bar2G.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0,"+margin.top+")")
+                .call(d3v4.axisLeft(bar2Y).tickSize(0));
+
+            bar2G.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0,0)")
+                .call(d3v4.axisBottom(bar2X).ticks(null).tickSize(0))
+                .append("text")
+                .attr("y", 0)
+                .attr("x", bar2X(bar2X.ticks().pop()) - 1)
+                .attr("dy", "0.32em")
+                .attr("fill", "#000")
+                .attr("text-anchor", "start")
+                .text("Number of P/PA")
+                .attr("transform", "translate("+ (-width) +",-10)");
+
+            var bar2Legend = bar2G.append("g")
+                .attr("transform", "translate(-100,-100)")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", 10)
+                .attr("text-anchor", "end")
+                .selectAll("g")
+                .data(keys.slice().reverse())
+                .enter().append("g")
+                //.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+                .attr("transform", function(d, i) { return "translate(-50," + (300 + i * 20) + ")"; });
             
-        var bar2Z = d3v4.scaleOrdinal()
-            .range(["#2D777F", "#173B40", "#2b9ca5", "#7cc9d2", "#5BEEFF", "#51D6E5", "#44B2BF", "#e5f2f9", "#E9EDDE", "#e2e2e2"]);
+            bar2Legend.append("rect")
+                .attr("x", width - 19)
+                .attr("width", 19)
+                .attr("height", 19)
+                .attr("fill", bar2Z);
             
-        d3v4.tsv("{% url 'visualization:input_assignee_statistics_bar_graph_2' %}", function(d, i, columns) {
-        for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
-        d.total = t;
-        return d;
-        }, function(error, data) {
-            console.log(data);
-        if (error) throw error;
-
-        var keys = data.columns.slice(1);
-
-        data.sort(function(a, b) { return b.total - a.total; });
-        bar2Y.domain(data.map(function(d) { return d.CATEGORY; }));
-        bar2X.domain([0, d3v4.max(data, function(d) { return d.total; })]).nice();
-        bar2Z.domain(keys);
-
-        bar2G.append("g")
-            .selectAll("g")
-            .data(d3v4.stack().keys(keys)(data))
-            .enter().append("g")
-            .attr("fill", function(d) { return bar2Z(d.key); })
-            .attr("transform", "translate(0,"+margin.top+")")
-            .selectAll("rect")
-            .data(function(d) { return d; })
-            .enter().append("rect")
-            .attr("class", "bar")
-            .attr("y", function(d) { return bar2Y(d.data.CATEGORY); })
-            .attr("x", function(d) { return bar2X(d[0]); })
-            .attr("width", function(d) { return bar2X(d[1]) - bar2X(d[0]); })
-            .attr("height", bar2Y.bandwidth());
-
-        bar2G.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(0,"+margin.top+")")
-            .call(d3v4.axisLeft(bar2Y).tickSize(0));
-
-        bar2G.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(0,0)")
-            .call(d3v4.axisBottom(bar2X).ticks(null).tickSize(0))
-            .append("text")
-            .attr("y", 0)
-            .attr("x", bar2X(bar2X.ticks().pop()) - 1)
-            .attr("dy", "0.32em")
-            .attr("fill", "#000")
-            .attr("text-anchor", "start")
-            .text("Number of P/PA")
-            .attr("transform", "translate("+ (-width) +",-10)");
-
-        var bar2Legend = bar2G.append("g")
-            .attr("transform", "translate(-100,-100)")
-            .attr("font-family", "sans-serif")
-            .attr("font-size", 10)
-            .attr("text-anchor", "end")
-            .selectAll("g")
-            .data(keys.slice().reverse())
-            .enter().append("g")
-            //.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-            .attr("transform", function(d, i) { return "translate(-50," + (300 + i * 20) + ")"; });
-        
-        bar2Legend.append("rect")
-            .attr("x", width - 19)
-            .attr("width", 19)
-            .attr("height", 19)
-            .attr("fill", bar2Z);
-        
-        bar2Legend.append("text")
-            .attr("x", width - 24)
-            .attr("y", 9.5)
-            .attr("dy", "0.32em")
-            .text(function(d) { return d; });
-        });
-        d3v4.select("#download-bar-2-svg")
-        .on('click', function(){
-            saveSvgAsPng(document.getElementById("bar-2-svg"), "Top {{selectedClassificationDisplay}} in {{maxYear}}", {scale: 3});
-        })
-    </script>
+            bar2Legend.append("text")
+                .attr("x", width - 24)
+                .attr("y", 9.5)
+                .attr("dy", "0.32em")
+                .text(function(d) { return d; });
+            });
+            d3v4.select("#download-bar-2-svg")
+            .on('click', function(){
+                saveSvgAsPng(document.getElementById("bar-2-svg"), "Top {{selectedClassificationDisplay}} in {{maxYear}}", {scale: 3});
+            })
+        </script>
+    </div>
 </div>
 {% endif %}
 
